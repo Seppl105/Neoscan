@@ -3,7 +3,7 @@ import numpy as np
 
 # Berechne sigma_z
 
-s_z = 0 #
+s_z = 0 # initially set to zero due to traction free surfaces with z-normal
 
 # Berechne sigma_phi_i
 
@@ -14,7 +14,7 @@ def term(n,r_2, r_1):
 r_i = 430 # [mm] innerer radius
 r_a = 646 # [mm] äußerer radius
 
-r = np.linspace(r_i,r_a,216)
+r = np.linspace(r_i,r_a,216) # diskretisierter Abstand
 
 nu = 0.3 # [-] possion's ratio
 p = 1 - nu # [-] const.
@@ -35,13 +35,13 @@ b = j * (b_za - b_zi)/(r_a - r_i) * term(4,r_a, r_i) + j * b_0 * term(3,r_a, r_i
 
 s_phi_i = ( (2/(1-(r_i**2 / r_a**2))) * ((p/2) * a + 1/r_a**2 * (1 - p/2) * b) ) / 1000 # [MPa = N/mm^2]
 
-print(s_phi_i)
+# print(s_phi_i)
 
 # Berechne sigma_r(r)
 
 s_r = 1/2 * s_phi_i * (1 - r_i**2/r**2) - 1/2 * p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i) + j * b_0 * term(1,r, r_i)) / 1000) - (1/r**2 * (1 - p/2) * (j * (b_za - b_zi)/(r_a - r_i) * term(4,r, r_i) + j * b_0 * term(3,r, r_i))) / 1000
 
-print(s_r)
+# print(s_r)
 
 s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * b_0 * term(1,r, r_i)) / 1000) - s_r
 
@@ -51,7 +51,7 @@ plt.plot(r, s_phi, label='hoop stresses over radius', linewidth=2)
 plt.plot(r, (s_phi+f), label='hoop stresses over radius', linewidth=2)
 plt.grid()
 plt.xlabel('r, [mm]')
-plt.ylabel(r'Sigma_phi, [MPa]')
+plt.ylabel(r'Sigma_phi(r), [MPa]')
 plt.title('Hoop Stresses over radius')
 plt.legend
 plt.show()
