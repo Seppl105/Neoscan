@@ -50,7 +50,7 @@ def calcStresses(s_z0, s_ra, s_ri):
 
     ### Berechne sigma_r(r)
 
-    s_r = 1/2 * s_phi_i * (1 - r_i**2/r**2) - 1/2 * p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i) + j * b_0 * term(1,r, r_i)) / 1000) - (1/r**2 * (1 - p/2) * (j * (b_za - b_zi)/(r_a - r_i) * term(4,r, r_i) + j * b_0 * term(3,r, r_i))) / 1000
+    s_r = 1/2 * s_phi_i * (1 - r_i**2/r**2) - 1/2 * p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i) + j * b_0 * term(1,r, r_i)) / 1000) - (1/r**2 * (1 - p/2) * (j * (b_za - b_zi)/(r_a - r_i) * term(4,r, r_i) + j * b_0 * term(3,r, r_i))) / 1000 + 1/2 * (1 + r_i**2/r**2) * s_ri
 
     # print(s_r)
 
