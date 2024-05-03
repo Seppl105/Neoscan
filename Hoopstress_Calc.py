@@ -51,7 +51,7 @@ plt.plot(r, s_phi, label='hoop stresses over radius', linewidth=2)
 plt.plot(r, (s_phi+f), label='hoop stresses over radius', linewidth=2)
 plt.grid()
 plt.xlabel('r, [mm]')
-plt.ylabel(r'Sigma_phi, [MPa]')
+plt.ylabel(r'Sigma_phi(r), [MPa]')
 plt.title('Hoop Stresses over radius')
 plt.legend
 plt.show()
