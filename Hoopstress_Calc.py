@@ -9,6 +9,10 @@ s_z0 = 0 # [Pa]
 nu = 0.3 # [-] possion's ratio
 p = 1 - nu # [-] const.
 
+#   Spannungsrandbedingungen
+s_ra = 30 # [MPa] !!!Wert frei gewählt
+s_ri = 50 # [MPa] !!!Wert frei gewählt
+
 r_i = 430 # [mm] innerer radius
 r_a = 646 # [mm] äußerer radius
 r = np.linspace(r_i,r_a,216) # array mit diskreten Radien
@@ -40,7 +44,7 @@ a = j * (b_za - b_zi)/(r_a - r_i) * term(2,r_a, r_i)  +  j * b_0 * term(1,r_a, r
 
 b = j * (b_za - b_zi)/(r_a - r_i) * term(4,r_a, r_i)  +  j * b_0 * term(3,r_a, r_i) # Integral (II)
 
-s_phi_i = (  (2/(1-(r_i**2 / r_a**2)))    *    ((p/2) * a + 1/r_a**2 * (1 - p/2) * b)  ) / 1000 # [MPa = N/mm^2]
+s_phi_i = (  (2/(1-(r_i**2 / r_a**2)))    *    ((p/2) * a + 1/r_a**2 * (1 - p/2) * b)  + s_ra - 1/2 * (1 + r_i**2/r_a**2) * s_ri) / 1000 # [MPa = N/mm^2]
 
 # print(s_phi_i)
 
