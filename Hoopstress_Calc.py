@@ -58,21 +58,21 @@ s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * 
 
 f = -75 + 13 * (r - 420)**(1/3)
 
-plt.plot(r, s_phi, label='hoop stresses over radius', linewidth=2)
-plt.plot(r, (s_phi+f), label='hoop stresses over radius', linewidth=2)
-plt.grid()
-plt.xlabel('r, [mm]')
-plt.ylabel(r'Sigma_phi(r), [MPa]')
-plt.title('Hoop Stresses over radius')
-plt.legend
-plt.show()
+fig, (ax1, ax2) = plt.subplots(1,2)
+ax1.plot(r, s_phi, label='hoop stresses over radius', linewidth=2)
+ax1.plot(r, (s_phi+f), label='hoop stresses over radius', linewidth=2)
+ax1.grid()
+ax1.set_xlabel('r, [mm]')
+ax1.set_ylabel(r'Sigma_phi(r), [MPa]')
+ax1.set_title('Hoop Stresses over radius')
+#ax1.legend
+#plt.show()
 
-
-plt.plot(r, s_r, label='radial stresses over radius', linewidth=2)
-plt.plot(r, (b_za-b_zi)/(r_a-r_i) * r + b_0)
-plt.grid()
-plt.xlabel('r, [mm]')
-plt.ylabel(r'Sigma_r, [MPa]')
-plt.title('Radial Stresses over radius')
-plt.legend
+ax2.plot(r, s_r, label='radial stresses over radius', linewidth=2)
+ax2.plot(r, (b_za-b_zi)/(r_a-r_i) * r + b_0)
+ax2.grid()
+ax2.set_xlabel('r, [mm]')
+ax2.set_ylabel(r'Sigma_r, [MPa]')
+ax2.set_title('Radial Stresses over radius')
+#ax2.legend
 plt.show()
