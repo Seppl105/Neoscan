@@ -61,19 +61,28 @@ def calcStresses(s_z0, s_ra, s_ri):
 #f = -75 + 13 * (r - 420)**(1/3)
 sArray = []
 sArray.insert(len(sArray), calcStresses(0, 0, 0))
-sArray.insert(len(sArray), calcStresses(0, 0, 100))
-sArray.insert(len(sArray), calcStresses(0, 0, -100))
+sArray.insert(len(sArray), calcStresses(0, 0, 5))
+sArray.insert(len(sArray), calcStresses(0, 0, -5))
 
-fig, (axs0, axs1) = plt.subplots(2,3, figsize=(12,15))
+fig, (axs0, axs1) = plt.subplots(2,3, figsize=(12,15),sharex="col", sharey="row")
+axs0[0].set_ylabel(r'radial stress [MPa]')
+axs1[0].set_ylabel(r'hoop stress [MPa]')
 
 i=0
 for ax in axs0:
-    ax.plot(r, sArray[i][0], label='hoop stresses over radius', linewidth=2)
+    ax.plot(r, sArray[i][0], label='radial stresses over radius', linewidth=2)
+    ax.grid(True)
+    #ax.set_ylim([-100, 100])
     i += 1
+
+
 
 i=0
 for ax in axs1:
     ax.plot(r, sArray[i][1], label='hoop stresses over radius', linewidth=2)
+    ax.grid(True)
+    ax.set_xlabel('radius [mm]')
+    #ax.set_ylim([100, 450])
     i += 1
 
 # fig, (ax1, ax2) = plt.subplots(1,2)
@@ -93,6 +102,7 @@ for ax in axs1:
 # ax2.set_ylabel(r'Sigma_r, [MPa]')
 # ax2.set_title('Radial Stresses over radius')
 # #ax2.legend
+
 plt.show()
 
 
