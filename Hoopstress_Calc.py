@@ -46,7 +46,6 @@ print(s_r)
 s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * b_0 * term(1,r, r_i)) / 1000) - s_r
 
 f = -75 + 13 * (r - 420)**(1/3)
-for i,element in f
 
 plt.plot(r, s_phi, label='hoop stresses over radius', linewidth=2)
 plt.plot(r, (s_phi+f), label='hoop stresses over radius', linewidth=2)
