@@ -4,12 +4,12 @@ import numpy as np
 # Definierte Werte
 #   Konstanten des Versuchsaufbau
 nu = 0.3 # [-] possion's ratio
-p = 1 - nu # [-] const.
+p = 1 + nu # [-] const.
 
 #   Spannungsrandbedingungen
-s_z0 = 0 #  [MPa] !!!Wert frei gewählt
-s_ra = 10 # [MPa] !!!Wert frei gewählt
-s_ri = 10 # [MPa] !!!Wert frei gewählt
+#s_z0 = 0 #  [MPa] !!!Wert frei gewählt
+#s_ra = 10 # [MPa] !!!Wert frei gewählt
+#s_ri = 10 # [MPa] !!!Wert frei gewählt
 
 r_i = 430 # [mm] innerer radius
 r_a = 646 # [mm] äußerer radius
@@ -53,6 +53,8 @@ def calcStresses(s_z0, s_ra, s_ri):
     s_r = 1/2 * s_phi_i * (1 - r_i**2/r**2) - 1/2 * p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i) + j * b_0 * term(1,r, r_i)) / 1000) - (1/r**2 * (1 - p/2) * (j * (b_za - b_zi)/(r_a - r_i) * term(4,r, r_i) + j * b_0 * term(3,r, r_i))) / 1000 + 1/2 * (1 + r_i**2/r**2) * s_ri
 
     # print(s_r)
+    
+    ### Berechne sigma_phi
 
     s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * b_0 * term(1,r, r_i)) / 1000) - s_r
 
