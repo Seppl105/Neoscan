@@ -37,15 +37,20 @@ def calcStresses(s_z0, s_ra, s_ri):
     s_phii = (  2 / (1 - (r_i**2/r_a**2))  ) * ( s_ra  +  ((1 + nu) / 2) * calcIntegral(0, r_a, r_a, r_i, j, b_za, b_zi, b_0)
                                                 +  (1/r_a**2) * (1 - (1 + nu)/2 ) * calcIntegral(2,r_a, r_a, r_i, j, b_za, b_zi, b_0)
                                                 -  (s_ri  *  (1/2)  *  (1 + (r_i**2/r_a**2))))
+    print("s_phii: ", s_phii)
+    print("Term 1: ", s_ra  +  ((1 + nu) / 2) * calcIntegral(0, r_a, r_a, r_i, j, b_za, b_zi, b_0), 
+          "\nTerm 2: ", +  (1/r_a**2) * (1 - (1 + nu)/2 ) * calcIntegral(2,r_a, r_a, r_i, j, b_za, b_zi, b_0),
+          "\nTerm 3: ",  -  (s_ri  *  (1/2)  *  (1 + (r_i**2/r_a**2))))
     
     ###Berechne s_r(r)
     s_rArray = (  (1/2) * s_phii * (1 - r_i**2/r**2) 
                 - ((1 + nu) / 2) * calcIntegral(0, r, r_a, r_i, j, b_za, b_zi, b_0)
                 -  (1/r**2) * (1 - (1 + nu)/2 ) * calcIntegral(2, r, r_a, r_i, j, b_za, b_zi, b_0)
                 +  (s_ri  *  (1/2)  *  (1 + (r_i**2/r**2))))
+    print("s_rArray: ", s_rArray[0:5])
     
     ### Berechne s_phi
-    s_phiArray = ( (s_ri - nu * s_z0)  
+    s_phiArray = ( (s_phii - nu * s_z0)  
                  +  nu * s_z  
                  -  (nu + 1) * calcIntegral(0, r, r_a, r_i, j, b_za, b_zi, b_0)
                  + s_ri
@@ -55,8 +60,10 @@ def calcStresses(s_z0, s_ra, s_ri):
 
 sArray = []
 sArray.insert(len(sArray), calcStresses(0, 0, 0))
+# sArray.insert(len(sArray), calcStresses(0, 5 * 10**6, 0))
 sArray.insert(len(sArray), calcStresses(0, 0, 5 * 10**6))
-sArray.insert(len(sArray), calcStresses(0, 0, -5 * 10**6))
+# sArray.insert(len(sArray), calcStresses(0, -5 * 10**6, 0))
+sArray.insert(len(sArray), calcStresses(0, -50 * 10**6, 50 * 10**6))
 
 fig, (axs0, axs1) = plt.subplots(2,3, figsize=(12,15),sharex="col", sharey="row")
 axs0[0].set_ylabel('radial stress [Pa]')
@@ -77,7 +84,17 @@ for ax in axs1:
     ax.grid(True)
     ax.set_xlabel('radius [m]')
     i += 1
+
+
+
     
 plt.show()
 
+E = 150 * 10**9
+nu = 0.3
+u_r = ( 1 / E * (sArray[0][0] - nu * sArray[0][1]) ) * r
+e_r = 1 / E * (sArray[0][0] - nu * sArray[0][1])
+#plt.plot(r, u_r)
+plt.plot(r, e_r)
+plt.show()
     

@@ -44,19 +44,22 @@ def calcStresses(s_z0, s_ra, s_ri):
 
     b = j * (b_za - b_zi)/(r_a - r_i) * term(4,r_a, r_i)  +  j * b_0 * term(3,r_a, r_i) # Integral (II)
 
-    s_phi_i = (  (2/(1-(r_i**2 / r_a**2)))    *    ((p/2) * a + 1/r_a**2 * (1 - p/2) * b)  + 1000 * s_ra - 1/2 * (1 + r_i**2/r_a**2) * 1000 * s_ri) / 1000 # [MPa = N/mm^2]
+    s_phi_i = (  (2/(1-(r_i**2 / r_a**2)))    *    ((p/2) * a + 1/r_a**2 * (1 - p/2) * b  + 1000 * s_ra - 1/2 * (1 + r_i**2/r_a**2) * 1000 * s_ri) / 1000) # [MPa = N/mm^2]
 
-    print(s_phi_i)
+    print("s_phi_i: ", s_phi_i)
+    print("umgestellt zu Term 1: ", 1000 * s_ra + (p/2) * a, 
+          "\n umgestellt zu Term 2: ", + 1/r_a**2 * (1 - p/2) * b,
+          "\nTerm 3: ", - 1/2 * (1 + r_i**2/r_a**2) * 1000 * s_ri)
 
     ### Berechne sigma_r(r)
 
     s_r = 1/2 * s_phi_i * (1 - r_i**2/r**2) - 1/2 * p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i) + j * b_0 * term(1,r, r_i)) / 1000) - (1/r**2 * (1 - p/2) * (j * (b_za - b_zi)/(r_a - r_i) * term(4,r, r_i) + j * b_0 * term(3,r, r_i))) / 1000 + 1/2 * (1 + r_i**2/r**2) * s_ri
 
-    # print(s_r)
+    print("s_r: ", s_r[0:5])
     
     ### Berechne sigma_phi
 
-    s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * b_0 * term(1,r, r_i)) / 1000) - s_r
+    s_phi = s_phi_i - p * ((j * (b_za - b_zi)/(r_a - r_i) * term(2,r, r_i   ) + j * b_0 * term(1,r, r_i)) / 1000) - s_r +s_ri# fehlt ein +s_ri
 
     return [s_r, s_phi]
 
