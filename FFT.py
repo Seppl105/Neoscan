@@ -22,7 +22,7 @@ Er[:int(0.6*length)] = 150* 10**9
 # Er[-50:] = -100 * 10**9 # Test für length = 100
 # Er[-5:] = -150 * 10**9  # Test für length = 100
 
-anzahlPlots = 4
+anzahlPlots = 5
 
 plt.subplot(1, anzahlPlots, 1)
 plt.plot(Er)
@@ -64,8 +64,12 @@ plt.ylabel("Magnitude")
 plt.xlabel("Frequency Index")
 
 plt.subplot(1, anzahlPlots, 4)
-ErResult = (np.fft.fftshift(np.real(fftEr)) * np.cos(2 * np.pi * 100 *  np.fft.fftfreq(len(Er)))
-          + np.fft.fftshift(np.imag(fftEr)) * np.sin(2 * np.pi * 100 * np.fft.fftfreq(len(Er))))
+ErTest = (np.fft.fftshift(np.real(fftEr)) * np.cos(2 * np.pi * 100 *  np.fft.fftfreq(len(Er)))
+         + np.fft.fftshift(np.imag(fftEr)) * np.sin(2 * np.pi * 100 * np.fft.fftfreq(len(Er))))
+plt.plot(ErTest)
+
+plt.subplot(1, anzahlPlots, 5)
+ErResult = np.fft.ifft(fftEr)
 plt.plot(ErResult)
 
 plt.show()
