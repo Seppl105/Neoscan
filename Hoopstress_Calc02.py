@@ -4,7 +4,7 @@ import numpy as np
 
 # Definierte Werte
 #   Konstanten des Versuchsaufbau
-nu = 0.3                # [-] possion's ratio
+nu = 0.3             # [-] possion's ratio
 #p = 1 - nu # [-] const.
 
 #   Spannungsrandbedingungen
@@ -18,7 +18,7 @@ r = np.linspace(r_i,r_a,216) # array mit diskreten Radien
 
 j = 114.2   * (1000**2) # [A/m^2] Stromdichte
 b_za = -2.5             # [T] magnetische Flussdichte außen
-b_zi = 15               # [T] magnetische Flussdichte innen
+b_zi = 14               # [T] magnetische Flussdichte innen
 b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
 
 #def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
@@ -61,9 +61,9 @@ def calcStresses(s_z0, s_ra, s_ri):
 sArray = []
 sArray.insert(len(sArray), calcStresses(0, 0, 0))
 # sArray.insert(len(sArray), calcStresses(0, 5 * 10**6, 0))
-sArray.insert(len(sArray), calcStresses(0, 0, 5 * 10**6))
+sArray.insert(len(sArray), calcStresses(0, -5 * 10**6, 0))
 # sArray.insert(len(sArray), calcStresses(0, -5 * 10**6, 0))
-sArray.insert(len(sArray), calcStresses(0, -50 * 10**6, 50 * 10**6))
+sArray.insert(len(sArray), calcStresses(-84 * 10**6, 0, 0))
 
 fig, (axs0, axs1) = plt.subplots(2,3, figsize=(12,15),sharex="col", sharey="row")
 axs0[0].set_ylabel('radial stress [Pa]')
@@ -92,9 +92,11 @@ plt.show()
 
 E = 150 * 10**9
 nu = 0.3
-u_r = ( 1 / E * (sArray[0][0] - nu * sArray[0][1]) ) * r
+u_r = ( 1 / E * (-nu * sArray[0][0] + sArray[0][1]) ) * r
 e_r = 1 / E * (sArray[0][0] - nu * sArray[0][1])
 #plt.plot(r, u_r)
 plt.plot(r, e_r)
+plt.plot(r, u_r)
+plt.legend()
 plt.show()
     

@@ -66,8 +66,8 @@ def calcStresses(s_z0, s_ra, s_ri):
 #f = -75 + 13 * (r - 420)**(1/3)
 sArray = []
 sArray.insert(len(sArray), calcStresses(0, 0, 0))
-sArray.insert(len(sArray), calcStresses(0, 0, 5))
-sArray.insert(len(sArray), calcStresses(0, 0, -5))
+sArray.insert(len(sArray), calcStresses(0, 15, 5))
+sArray.insert(len(sArray), calcStresses(0, -23, -5))
 
 fig, (axs0, axs1) = plt.subplots(2,3, figsize=(12,15),sharex="col", sharey="row")
 axs0[0].set_ylabel(r'radial stress [MPa]')
