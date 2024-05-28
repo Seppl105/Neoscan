@@ -45,7 +45,7 @@ plt.xlabel("Radius in m")
 plt.ylabel("E-Modul in N/m^2")
 
 #plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
-plt.plot(np.linspace(0, length, length*5),inverseFourier(np.linspace(0, length, length*5), fftEr, np.fft.fftfreq(length)), label='Reconstructed Function', linestyle='--')
+plt.plot(np.linspace(50, length, length*5),inverseFourier(np.linspace(50, length, length*5), fftEr, np.fft.fftfreq(length)), label='Reconstructed Function', linestyle='--')
 plt.legend()
 
 
