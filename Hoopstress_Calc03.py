@@ -1,17 +1,19 @@
-# Calculating the hoopstresses with E(r) and nu(r) modelled as Fourier Series
+# Calculating the hoopstresses with E(r) and ny(r) modelled as Fourier Series
 
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as smp
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
+from Hoopstress_Calc02Copy import calcStresses
 
 
-#####   Definierte Werte
+#####   Definierte 
+# Subplots
 anzahlRowPlots = 2
-anzahlColumnPlots = 2
+anzahlColumnPlots = 3
 
-numberOfValues = 1000
+numberOfValues = 1000 # Anzahl der Werte des r Vektors
 #   Spannungsrandbedingungen
 #s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
 #s_ra = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
@@ -39,12 +41,14 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 E = np.ones(numberOfValues) * 100 * 10**9 # E Modul
-#E[:int(0.6* numberOfValues)] = 150* 10**9
+E[:int(0.6* numberOfValues)] = 150* 10**9
 
-#nu = 0.3             # [-] possion's ratio
-#p = 1 - nu # [-] const.
-nu = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
-#nu[:int(0.3* numberOfValues)] = 0.25
+#ny = 0.3             # [-] possion's ratio
+#p = 1 - ny # [-] const.
+
+
+ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
+ny[:int(0.3* numberOfValues)] = 0.25
 
 
 
@@ -65,11 +69,16 @@ def getFourierSeries(r, inputFunction):
     fftInputFunction = np.fft.fft(inputFunction) # Koeffizienten der fft berechnet mit der Funktion fft aus dem fft package
     return inverseFourier(r, fftInputFunction, np.fft.fftfreq(len(inputFunction)))
 
+# Funktion die das Anfangswertproblem definiert zum lösen mit odeitn
+def dSdr(r, S):
+    s_r, s_phi = S
+    return [    1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r,
+                1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (s_r + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * s_r  + s_phi  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)]
 
 
 ######  Hauptprogramm
 
-### Berechnen der differenzierbaren Funktionen E(r) und nu(r) und ihrer ersten Ableitungen nach r
+### Berechnen der differenzierbaren Funktionen E(r) und Ny(r) und ihrer ersten Ableitungen nach r
 # E(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
 plt.plot(r , E, label="vorgegebenes E(r)")
@@ -83,29 +92,29 @@ fourierFunctionE_f = smp.lambdify(x, fourierFunctionE) # Convert FourierFunction
 #FourierFunctionEr = getFourierSeries(np.linspace(0, len(r), len(r)*5), Er)
 
 plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-         fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='mit Fourrierreihe genähert', linestyle='--')
+         fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='E(r) mit Fourrierreihe genähert', linestyle='--')
 plt.legend()
 
-# nu(r)
-plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlRowPlots + 1)
-plt.plot(r , nu, label="vorgegebenes nu(r)")
+# ny(r)
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 1)
+plt.plot(r , ny, label="vorgegebenes ny(r)")
 plt.xlabel("Radius in m")
-plt.ylabel("nu in 1")
+plt.ylabel("ny in 1")
 
-fourierFunctionNu = getFourierSeries(x, nu) # A function dependant on the "Symbol" x
-fourierFunctionNu_f = smp.lambdify(x, fourierFunctionNu) # Convert FourierFunctionEr to a numerical function for plotting
-#FourierFunctionNu = getFourierSeries(np.linspace(0, len(r), len(r)*5), nu)
+fourierFunctionNy = getFourierSeries(x, ny) # A function dependant on the "Symbol" x
+fourierFunctionNy_f = smp.lambdify(x, fourierFunctionNy) # Convert FourierFunctionEr to a numerical function for plotting
+#FourierFunctionNy = getFourierSeries(np.linspace(0, len(r), len(r)*5), ny)
 plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-         fourierFunctionNu_f(x=np.linspace(0, len(r), len(r) * 5)), label='mit Fourrierreihe genähert', linestyle='--')
+         fourierFunctionNy_f(x=np.linspace(0, len(r), len(r) * 5)), label='ny(r) mit Fourrierreihe genähert', linestyle='--')
 plt.legend()
 
 # dE(r)/dr
 dfourierFunctionE = smp.diff(fourierFunctionE, x)
 dfourierFunctionE_f = smp.lambdify(x, dfourierFunctionE)
 
-# dnu(r)/dr
-dfourierFunctionNu = smp.diff(fourierFunctionNu, x)
-dfourierFunctionNu_f = smp.lambdify(x, dfourierFunctionNu)
+# dny(r)/dr
+dfourierFunctionNy = smp.diff(fourierFunctionNy, x)
+dfourierFunctionNy_f = smp.lambdify(x, dfourierFunctionNy)
 
 
 ### Bestimmen der Spannungen in radiale Richtungen s_r(r) und in Umfangsrichtung s_phi(r)
@@ -118,10 +127,6 @@ dradialForce_f = smp.lambdify(x, dradialForce)
 
 # lösen des DGL Systems 1. Ordnung bestehend aus (b*) für d(sigma_r)/dr und (a*) für d(sigma_phi)/dr
 
-def dSdr(r, S):
-    s_r, s_phi = S
-    return [    1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r,
-                1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r   + fourierFunctionNu_f(r) * ds_z   + dfourierFunctionNu_f(r) * (s_r + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNu_f(r) * s_r  + s_phi  + fourierFunctionNu_f(r) * s_z)   - (1 + fourierFunctionNu_f(r)) * radialForce_f(r)]
 
 ## solving initial value problem with odeint
 # defining initial conditions for s_r(r_i) and s_phi(r_i)   (initial conditions are the values for r[0])
@@ -137,35 +142,71 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 plt.plot(r, s_rsolOdeint, label="s_r with Odeint")
 plt.xlabel("Radius in m")
 plt.ylabel("s_r in N/m^2")
-plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlRowPlots + 2)
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 plt.plot(r, s_phisolOdeint, label="s_phi with Odeint")
 plt.xlabel("Radius in m")
 plt.ylabel("s_phi in N/m^2")
 
 # ## solving bvp with solve_bvp
-# def bc(ya, yb):
-#     return np.array([ya[0], ya[-1]])
+def func(r, y):
+    dSigmardr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
+    dSigmaPfidr = -1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (y[0] + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * y[0]  + y[1]  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)
+    
+    return np.vstack((dSigmardr,dSigmaPfidr))
 
-# Sguess = np.zeros((len(r), len(r)), dtype=float)
-# solBvp = solve_bvp(dSdr, bc, r, Sguess)
+def bc(ya, yb):
+    # return np.array([ya[0],ya[1]-4.2E08])
+    return np.array([ya[0], yb[0]])
+ 
 
-# s_rsolBvp = solBvp.T[0]
-# s_phisolBvp = solBvp.T[1]
+#Sguess = np.zeros((len(r), len(r)), dtype=float)
+y_a = np.zeros((2, r.size))
+
+y_b = np.zeros((2, r.size))
+solBvp = solve_bvp(func, bc, r, y_a)
+
+s_rSolBvp = solBvp.sol(r)[0]
+s_phiSolBvp = solBvp.sol(r)[1]
 
 
-# plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
-# plt.plot(r, s_rsolBvp, label="s_r with bvp")
-# plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlRowPlots + 2)
-# plt.plot(r, s_phisolBvp, label="s_phi with bvp")
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
+#plt.plot(r, solBvp, label="s_r with bvp")
+plt.plot(r, s_rSolBvp, label="s_r with bvp")
+plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0], label="s_r nach Caldwell")
+plt.legend()
 
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
+#plt.plot(r, s_phisolBvp, label="s_phi with bvp")
+plt.plot(r, s_phiSolBvp, label="s_phi with bvp")
+plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], label="s_phi nach Caldwell")
+plt.legend()
 # # lösen der Gleichung (e) also eihner DGL 2. Ordnung durch überführen in ein DGL System mit DGLs 1. Ordnung
 
 # # Vektor containing s_r and ds_r/dr = h
 # def dSdr(r, S):
 #     s_r, h = S
 #     return [    h,
-#                 -1/r * 3 * h    - dradialForce_f(r)    - 1/r * (+fourierFunctionNu(r) * ds_z + dfourierFunctionNu_f(r) * (s_r + s_z) + dfourierFunctionE_f(r) * 1/fourierFunctionE(r) * (-fourierFunctionNu(r) * s_r + r * h + r*radialForce_f(r) + s_r - fourierFunctionNu(r) * s_z) - (2 + fourierFunctionNu_f(r)) * radialForce_f(r))] 
+#                 -1/r * 3 * h    - dradialForce_f(r)    - 1/r * (+fourierFunctionNy(r) * ds_z + dfourierFunctionNy_f(r) * (s_r + s_z) + dfourierFunctionE_f(r) * 1/fourierFunctionE(r) * (-fourierFunctionNy(r) * s_r + r * h + r*radialForce_f(r) + s_r - fourierFunctionNy(r) * s_z) - (2 + fourierFunctionNy_f(r)) * radialForce_f(r))] 
 #
 
 # # defining initial conditions for s_r(r_i) and ds_r(r_i)   (initial conditions are the value for r[0])
+
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
+plt.plot(r, dfourierFunctionE_f(r), label="dE")
+plt.plot(r, dfourierFunctionNy_f(r), label="dny")
+#plt.plot(r, radialForce_f(r), label="R")
+plt.legend()
+#plt.plot(r, dradialForce_f(r))
+
+
+
+### Berechnen der Verschiebungen
+u_r = ( 1 / fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * s_rSolBvp + s_phiSolBvp) ) * r
+e_r = 1 / fourierFunctionE_f(r) * (s_rSolBvp - fourierFunctionNy_f(r) * s_phiSolBvp)
+#plt.plot(r, u_r)
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
+#plt.plot(r, e_r, label="e_r")
+plt.plot(r, u_r, label="u")
+plt.legend()
+
 plt.show()
