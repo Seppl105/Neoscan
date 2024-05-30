@@ -273,17 +273,19 @@ print("Berechnen der Verschiebungen")
 
 def calcDisplacement(r, s_r, s_phi, E, ny):
     print("bbbbbbbbb")
-    #u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
-    u_r = r
+    print(type(E), type(ny), type(s_r), type(s_phi), type(r))
+    print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
+    u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
+    #u_r = r
     print("ccccccccc")
-    #e_r = 1/E * (s_r - ny * s_phi)
-    e_r = r
+    e_r = 1/E * (s_r - ny * s_phi)
+    #e_r = r
     print("test2")
     return([u_r, e_r])
 
 print("aaaa")
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
-u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, fourierFunctionE, fourierFunctionNy)[0]
+u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, fourierFunctionE_f(r), fourierFunctionNy_f(r))[0]
 print("test1")
 u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[0]
 print("test3")
