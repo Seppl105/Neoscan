@@ -41,15 +41,16 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 E = np.ones(numberOfValues) * 100 * 10**9 # E Modul
-E[:int(0.6* numberOfValues)] = 150* 10**9
+E[:int(0.2* numberOfValues)] = 150 * 10**9
+E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
 
 
 ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
-ny[:int(0.3* numberOfValues)] = 0.25
-
+ny[len(E) - int(0.2* numberOfValues):] = 0.25
+ny[:int(0.2* numberOfValues)] = 0.25
 
 
 # Fuktionswert an der Stelle r über eine Fourierreihe aus den Fourierkoeffizienten bestimmen
@@ -73,7 +74,7 @@ def getFourierSeries(r, inputFunction):
 def dSdr(r, S):
     s_r, s_phi = S
     return [    1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r,
-                1/r * s_phi   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * s_r   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (s_r + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * s_r  + s_phi  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)]
+                - 1/r * s_phi  + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * s_r   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (s_r + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * s_r  + s_phi  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)]
 
 
 ######  Hauptprogramm
@@ -139,11 +140,11 @@ s_phisolOdeint = solOdeint.T[1]
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
-plt.plot(r, s_rsolOdeint, label="s_r with Odeint")
+plt.plot(r, s_rsolOdeint, "--", label="s_r berechnet als IVP")
 plt.xlabel("Radius in m")
 plt.ylabel("s_r in N/m^2")
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
-plt.plot(r, s_phisolOdeint, label="s_phi with Odeint")
+plt.plot(r, s_phisolOdeint, "--", label="s_phi berechnet als IVP")
 plt.xlabel("Radius in m")
 plt.ylabel("s_phi in N/m^2")
 
@@ -171,13 +172,13 @@ s_phiSolBvp = solBvp.sol(r)[1]
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, solBvp, label="s_r with bvp")
-plt.plot(r, s_rSolBvp, label="s_r with bvp")
+plt.plot(r, s_rSolBvp, label="s_r berechnet als BVP")
 plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0], label="s_r nach Caldwell")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 #plt.plot(r, s_phisolBvp, label="s_phi with bvp")
-plt.plot(r, s_phiSolBvp, label="s_phi with bvp")
+plt.plot(r, s_phiSolBvp, label="s_phi berechnet als BVP")
 plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], label="s_phi nach Caldwell")
 plt.legend()
 # # lösen der Gleichung (e) also eihner DGL 2. Ordnung durch überführen in ein DGL System mit DGLs 1. Ordnung
@@ -193,7 +194,9 @@ plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
 plt.plot(r, dfourierFunctionE_f(r), label="dE")
-plt.plot(r, dfourierFunctionNy_f(r), label="dny")
+plt.plot(r, dfourierFunctionNy_f(r) * 10**12, label="dny")
+plt.xlabel("Radius in m")
+plt.ylabel("Änderung für dE in N/m^3 für dny in 1/m E8")
 #plt.plot(r, radialForce_f(r), label="R")
 plt.legend()
 #plt.plot(r, dradialForce_f(r))
@@ -206,7 +209,9 @@ e_r = 1 / fourierFunctionE_f(r) * (s_rSolBvp - fourierFunctionNy_f(r) * s_phiSol
 #plt.plot(r, u_r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
 #plt.plot(r, e_r, label="e_r")
-plt.plot(r, u_r, label="u")
+plt.plot(r, u_r, color="orange", label="u_r berechnet über BVP",)
+plt.xlabel("Radius in m")
+plt.ylabel("u_r in m")
 plt.legend()
 
 plt.show()
