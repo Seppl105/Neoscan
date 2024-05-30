@@ -30,11 +30,11 @@ s_phi0 = 4.3264372825278825 * 10**2   # N/mm^2  #10**8 # N/m^2
 
 #   Konstanten des Versuchsaufbau
 
-r_i = 430 # [mm] innerer radius
-r_a = 646 # [mm] äußerer radius
+r_i = 0.430 # [mm] innerer radius
+r_a = 0.646 # [mm] äußerer radius
 r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
 
-j = 114.            # [A/m^2] Stromdichte * (1000**2) # [A/m^2] Stromdichte
+j = 114. #* (1000**2) # [A/m^2] Stromdichte
 b_za = -2.5             # [T] magnetische Flussdichte außen
 b_zi = 14               # [T] magnetische Flussdichte innen
 b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
@@ -186,32 +186,32 @@ s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, solBvp, label="s_r with bvp")
 #plt.plot(r, s_rSolBvpFourier, label="s_r berechnet als BVP mit Fourierreihe")
-plt.plot(r, 10**(-6) *  calcStresses(r=r / 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**6)[0], label="s_r nach Caldwell")
+plt.plot(r, 10**(-6) *  calcStresses(r=r * 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**(-6))[0], label="s_r nach Caldwell")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 #plt.plot(r, s_phiSolBvpFourier, label="s_phi with bvp")
 #plt.plot(r, s_phiSolBvpFourier, label="s_phi berechnet als BVP mit Fourierreihe")
-plt.plot(r, 10**(-6) *  calcStresses(r=r / 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**6)[1], label="s_phi nach Caldwell")
+plt.plot(r, 10**(-6) *  calcStresses(r=r * 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**(-6))[1], label="s_phi nach Caldwell")
 plt.legend()
 
 ## mit gradient
 print("für die Recheckfunktionen")
 
 def funcGradient(r, y):
-    print(np.shape(r), "r2")
+    #print(np.shape(r), "r2")
     #print(np.shape(E[numberOfValues - len(r):]), "E")
     #print(np.shape(-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]))
     #print(np.shape(+ ny * ds_z   + dGradientNy * (y[0] + s_z) ))
     #print(np.shape(+ dGradientE * 1/E * (-ny * y[0]  + y[1]  + ny * s_z)  ))
     #print(np.shape(- (1 + ny) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j ))
     dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
-    dSigmaPfi = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
+    dSigmaPfidr = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
                    + ny[numberOfValues - len(r):] * ds_z   + dGradientNy[numberOfValues - len(r):] * (y[0] + s_z)   
                    + dGradientE[numberOfValues - len(r):] * 1/E[numberOfValues - len(r):] * (-ny[numberOfValues - len(r):] * y[0]  + y[1]  + ny[numberOfValues - len(r):] * s_z)   
                    - (1 + ny[numberOfValues - len(r):]) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j )
     
-    return np.vstack((dSigmadr,dSigmaPfi))
+    return np.vstack((dSigmadr,dSigmaPfidr))
 
 
 y_a = np.zeros((2, r.size))
@@ -230,11 +230,11 @@ s_rSolBvpGradient = solBvpGradient.sol(r)[0]
 s_phiSolBvpGradient = solBvpGradient.sol(r)[1]
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, solBvp, label="s_r with bvp")
-plt.plot(r, s_rSolBvpGradient* 10**(-3), "--", label="s_r berechnet als BVP mit Differenzenquotienten")
+plt.plot(r, s_rSolBvpGradient, "--", label="s_r berechnet als BVP mit Differenzenquotienten")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
-plt.plot(r, s_phiSolBvpGradient * 10**(-3), "--", label="s_phi berechnet als BVP mit Differenzenquotienten")
+plt.plot(r, s_phiSolBvpGradient, "--", label="s_phi berechnet als BVP mit Differenzenquotienten")
 plt.legend()
 
 # # lösen der Gleichung (e) also eihner DGL 2. Ordnung durch überführen in ein DGL System mit DGLs 1. Ordnung
