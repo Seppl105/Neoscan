@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 
 
@@ -36,45 +36,24 @@ E[:int(anteilConductor * anzahlWerte)] = E_con
 E[int(anteilConductor * anzahlWerte) : int((anteilConductor + anteilCowinding) * anzahlWerte)] = E_cow
 E[int((anteilConductor + anteilCowinding) * anzahlWerte) : int((anteilConductor + anteilCowinding + anteilInsulation) * anzahlWerte)] = E_ins
 
-
-print(E)
-
-#print(r)
+r_gesamt = np.linspace(r_i,r_a, anzahlWerte*anzahlWindungen)
 
 
+i=0
+E_gesamt = np.ones(0)
+while i < anzahlWindungen:
+    E_gesamt = np.concatenate((E_gesamt,E))
+    i +=1
 
+print(E_gesamt)
+# print(len(r_gesamt))
+# print(len(E))
+# print(len(E_gesamt))
 
-
-
-
-
-
-
-
-# abstand = np.linspace(1,36, 360)
-# E = np.ones(360)
-# print(abstand)
-#
-# E_con = 100 #* 10**9 # [N/m^2] E-Modul Conductor
-# E_cow = 90 #* 10**9 # [N/m^2] E-Modul Cowinding
-# E_ins = 50 #* 10**9 # [N/m^2] E-Modul Insulation
-#
-# for i in abstand:
-#    if i < (t_con * 10000):
-#        E[int(i)] = E[int(i)] * E_con
-#        print(i)
-#    elif i < ((t_con + t_cow) * 10000):
-#        E[int(i)] = E[int(i)] * E_cow
-#        print(i)
-#    elif i < ((t_con + t_cow + t_ins) * 10000):
-#        E[int(i)] = E[int(i)] * E_cow
-#        print(i)
-#
-# print(E)
-
-
-
-
-
-
-np.ones(anzahlWerte)
+plt.plot(r_gesamt, E_gesamt, label='E Modul über r', linewidth=2)
+plt.grid()
+plt.xlabel('r, [mm]')
+plt.ylabel('E(r), [MPa]')
+plt.title('E Modul über Radius')
+plt.legend
+plt.show()
