@@ -289,8 +289,11 @@ u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, f
 print("test1")
 u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[0]
 print("test3")
+u_rCaldwell = calcDisplacement(r,  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], 100 * 10**9, 0.3)[0]
 plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
 plt.plot(r, u_rGradient, label="u_r berechnet über BVP mit Differenzenquotient")
+plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
+#plt.plot(r, u_rCaldwell)
 plt.xlabel("Radius in m")
 plt.ylabel("u_r in m")
 plt.legend()
