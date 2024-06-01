@@ -26,7 +26,7 @@ s_z0 = 0
 s_z = s_z0
 ds_z = 0
 s_r0 = 0
-s_phi0 = 4.3264372825278825 * 10**2     # N/mm^2
+s_phi0 = 4.3264372825278825 * 10**5     # N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 
 
 #   Konstanten des Versuchsaufbau
@@ -46,16 +46,16 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 
-E = np.ones(numberOfValues) * 100 * 10**3 # E Modul in N/mm^2
-E[:int(0.2* numberOfValues)] = 150 * 10**3
-E[len(E) - int(0.2* numberOfValues):] = 150 * 10**3
+E = np.ones(numberOfValues) * 100 * 10**6 # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
+#E[:int(0.2* numberOfValues)] = 150 * 10**6
+#E[len(E) - int(0.2* numberOfValues):] = 150 * 10**6
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
 
 ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
-ny[len(E) - int(0.2* numberOfValues):] = 0.25
-ny[:int(0.2* numberOfValues)] = 0.25
+#ny[len(E) - int(0.2* numberOfValues):] = 0.25
+#ny[:int(0.2* numberOfValues)] = 0.25
 
 ####################################################################################################################
 ##### Funktionsdefinition
@@ -228,8 +228,8 @@ def funcGradient(r, y):
     
     lengthR = len(r)
     E = np.ones(lengthR) * 100 * 10**3 # E Modul in N/mm^2
-    #E[:int(0.2* lengthR)] = 150 * 10**3
-    #E[len(E) - int(0.2* lengthR):] = 150 * 10**3
+    E[:int(0.2* lengthR)] = 101 * 10**3
+    E[len(E) - int(0.2* lengthR):] = 101 * 10**3
 
     ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
     #ny[len(E) - int(0.2* lengthR):] = 0.25
@@ -269,18 +269,18 @@ dGradientNy = np.gradient(ny)
 #print(np.shape(dGradientNy))
 #print(np.shape(ny))
 #print(np.shape(r), "r")
-solBvpGradient = solve_bvp(funcGradient, bc, r, y_a, max_nodes=10000)
+solBvpGradient = solve_bvp(funcGradient, bc, r, y_a, max_nodes=100000)
 print("solbvp results:\n solStatus (0 wenn alles geklappt hat): ", solBvpGradient.status, "\nsolmessage: ", solBvpGradient.message)
 
-s_rSolBvpGradient = solBvpGradient.sol(r)[0]
-s_phiSolBvpGradient = solBvpGradient.sol(r)[1]
+s_rSolBvpGradient = solBvpGradient.sol(r)[0]  *10**(-3)     # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
+s_phiSolBvpGradient = solBvpGradient.sol(r)[1]  *10**(-3)   # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, solBvp, label="s_r with bvp")
-plt.plot(r, s_rSolBvpGradient, "--", label="s_r berechnet als BVP mit Differenzenquotienten")
+plt.plot(r, s_rSolBvpGradient, "--", label="s_r berechnet als BVP mit Differenzenquotienten") 
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
-plt.plot(r, s_phiSolBvpGradient, "--", label="s_phi berechnet als BVP mit Differenzenquotienten")
+plt.plot(r, s_phiSolBvpGradient, "--", label="s_phi berechnet als BVP mit Differenzenquotienten") 
 plt.legend()
 
 # # lösen der Gleichung (e) also eihner DGL 2. Ordnung durch überführen in ein DGL System mit DGLs 1. Ordnung
@@ -335,13 +335,16 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
 print("test1")
 u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[0]
 print("test3")
-u_rCaldwell = calcDisplacement(r,  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], 100 * 10**9, 0.3)[0]
+u_rCaldwell = (calcDisplacement(r,  calcStresses(r=r/1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**6)[0] ,
+                               calcStresses(r=r/1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**6)[1], 
+                               100 * 10**9, 0.3)[0]
+                * 10**(-3))      # Umrechnung von m in mm
 #plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
 plt.plot(r, u_rGradient, label="u_r berechnet über BVP mit Differenzenquotient")
 plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
 #plt.plot(r, u_rCaldwell)
-plt.xlabel("Radius in m")
-plt.ylabel("u_r in m")
+plt.xlabel("Radius in mm")
+plt.ylabel("u_r in mm")
 plt.legend()
 
 print("Fertig")

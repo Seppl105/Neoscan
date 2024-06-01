@@ -13,43 +13,45 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Sample data points (you can replace this with your actual data)
-length = 100
-data = np.ones(length) * 100 * 10**9 # E Modul
-data[:int(0.6*length)] = 150* 10**9
+# # Sample data points (you can replace this with your actual data)
+# length = 100
+# data = np.ones(length) * 100 * 10**9 # E Modul
+# data[:int(0.6*length)] = 150* 10**9
 
 
 
-#data = np.sin(0.03* np.linspace(0,length,length)) + np.cos(0.09* np.linspace(0,length,length))
-#print(data)
-n = len(data)
-t = np.linspace(0, length, n, endpoint=False)  # Time vector (assuming sampling over 1 second)
-tManyValues = np.linspace(0, length, length*5)
+# #data = np.sin(0.03* np.linspace(0,length,length)) + np.cos(0.09* np.linspace(0,length,length))
+# #print(data)
+# n = len(data)
+# t = np.linspace(0, length, n, endpoint=False)  # Time vector (assuming sampling over 1 second)
+# tManyValues = np.linspace(0, length, length*5)
 
-# Compute the FFT
-coefficients = np.fft.fft(data)
+# # Compute the FFT
+# coefficients = np.fft.fft(data)
 
-# Frequency components
-frequencies = np.fft.fftfreq(n)
+# # Frequency components
+# frequencies = np.fft.fftfreq(n)
 
-# Create the function from the Fourier coefficients
-def fourier_series(t, coefficients, frequencies):
-    # Initialize the result with the mean value
-    result = np.real(coefficients[0]) / n
+# # Create the function from the Fourier coefficients
+# def fourier_series(t, coefficients, frequencies):
+#     # Initialize the result with the mean value
+#     result = np.real(coefficients[0]) / n
     
-    for k in range(1, n//2):  # We only need the first half of the frequencies due to symmetry
-        amplitude = 2 * np.abs(coefficients[k]) / n  # Get the amplitude
-        phase = np.angle(coefficients[k])  # Get the phase
-        result += amplitude * np.cos(2 * np.pi * frequencies[k] * t + phase)
+#     for k in range(1, n//2):  # We only need the first half of the frequencies due to symmetry
+#         amplitude = 2 * np.abs(coefficients[k]) / n  # Get the amplitude
+#         phase = np.angle(coefficients[k])  # Get the phase
+#         result += amplitude * np.cos(2 * np.pi * frequencies[k] * t + phase)
         
-    return result
+#     return result
 
-# Reconstruct the function
-reconstructed_function = fourier_series(tManyValues, coefficients, frequencies)
+# # Reconstruct the function
+# reconstructed_function = fourier_series(tManyValues, coefficients, frequencies)
 
-# Plot the original data and the reconstructed function
-plt.figure(figsize=(12, 6))
-plt.plot(t, data, label='Original Data')
-plt.plot(tManyValues, reconstructed_function, label='Reconstructed Function', linestyle='--')
-plt.legend()
-plt.show()
+# # Plot the original data and the reconstructed function
+# plt.figure(figsize=(12, 6))
+# plt.plot(t, data, label='Original Data')
+# plt.plot(tManyValues, reconstructed_function, label='Reconstructed Function', linestyle='--')
+# plt.legend()
+# plt.show()
+
+plt.plot(np.linspace(0, 10, 100), np.linspace(0, 10, 100))
