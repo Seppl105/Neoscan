@@ -25,16 +25,16 @@ s_z0 = 0
 s_z = s_z0
 ds_z = 0
 s_r0 = 0
-s_phi0 = 4.3264372825278825 * 10**8
+s_phi0 = 4.3264372825278825 * 10**2   # N/mm^2  #10**8 # N/m^2
 
 
 #   Konstanten des Versuchsaufbau
 
-r_i = 0.430 # [m] innerer radius
-r_a = 0.646 # [m] äußerer radius
+r_i = 0.430 # [mm] innerer radius
+r_a = 0.646 # [mm] äußerer radius
 r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
 
-j = 114.2   * (1000**2) # [A/m^2] Stromdichte
+j = 114. #* (1000**2) # [A/m^2] Stromdichte
 b_za = -2.5             # [T] magnetische Flussdichte außen
 b_zi = 14               # [T] magnetische Flussdichte innen
 b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
@@ -45,9 +45,9 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 
-E = np.ones(numberOfValues) * 100 * 10**9 # E Modul
-E[:int(0.2* numberOfValues)] = 150 * 10**9
-E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9
+E = np.ones(numberOfValues) * 100 * 10**3 # E Modul
+E[:int(0.2* numberOfValues)] = 150 * 10**3
+E[len(E) - int(0.2* numberOfValues):] = 150 * 10**3
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
@@ -90,8 +90,8 @@ print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitung
 # E(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
 plt.plot(r , E, label="vorgegebenes E(r)")
-plt.xlabel("Radius in m")
-plt.ylabel("E-Modul in N/m^2")
+plt.xlabel("Radius in mm")
+plt.ylabel("E-Modul in N/mm^2")
 
 x = smp.Symbol("x", real=True)
 fourierFunctionE = getFourierSeries(x, E) # A function dependant on the "Symbol" x
@@ -106,7 +106,7 @@ plt.legend()
 # ny(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 1)
 plt.plot(r , ny, label="vorgegebenes ny(r)")
-plt.xlabel("Radius in m")
+plt.xlabel("Radius in mm")
 plt.ylabel("ny in 1")
 
 fourierFunctionNy = getFourierSeries(x, ny) # A function dependant on the "Symbol" x
@@ -149,13 +149,13 @@ s_phisolOdeint = solOdeint.T[1]
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
-plt.plot(r, s_rsolOdeint, "--", label="s_r berechnet als IVP")
-plt.xlabel("Radius in m")
-plt.ylabel("s_r in N/m^2")
+#plt.plot(r, s_rsolOdeint, "--", label="s_r berechnet als IVP")
+plt.xlabel("Radius in mm")
+plt.ylabel("s_r in N/mm^2")
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
-plt.plot(r, s_phisolOdeint, "--", label="s_phi berechnet als IVP")
-plt.xlabel("Radius in m")
-plt.ylabel("s_phi in N/m^2")
+#plt.plot(r, s_phisolOdeint, "--", label="s_phi berechnet als IVP")
+plt.xlabel("Radius in mm")
+plt.ylabel("s_phi in N/mm^2")
 
 ###   solving bvp with solve_bvp 
 print("mit solvebvp")
@@ -185,14 +185,14 @@ s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, solBvp, label="s_r with bvp")
-plt.plot(r, s_rSolBvpFourier, label="s_r berechnet als BVP mit Fourierreihe")
-plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0], label="s_r nach Caldwell")
+#plt.plot(r, s_rSolBvpFourier, label="s_r berechnet als BVP mit Fourierreihe")
+plt.plot(r, 10**(-6) *  calcStresses(r=r * 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**(-6))[0], label="s_r nach Caldwell")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 #plt.plot(r, s_phiSolBvpFourier, label="s_phi with bvp")
-plt.plot(r, s_phiSolBvpFourier, label="s_phi berechnet als BVP mit Fourierreihe")
-plt.plot(r, calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], label="s_phi nach Caldwell")
+#plt.plot(r, s_phiSolBvpFourier, label="s_phi berechnet als BVP mit Fourierreihe")
+plt.plot(r, 10**(-6) *  calcStresses(r=r * 1000, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * 10**(-6))[1], label="s_phi nach Caldwell")
 plt.legend()
 
 ## mit gradient
@@ -206,12 +206,12 @@ def funcGradient(r, y):
     #print(np.shape(+ dGradientE * 1/E * (-ny * y[0]  + y[1]  + ny * s_z)  ))
     #print(np.shape(- (1 + ny) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j ))
     dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
-    dSigmaPfi = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
+    dSigmaPfidr = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
                    + ny[numberOfValues - len(r):] * ds_z   + dGradientNy[numberOfValues - len(r):] * (y[0] + s_z)   
                    + dGradientE[numberOfValues - len(r):] * 1/E[numberOfValues - len(r):] * (-ny[numberOfValues - len(r):] * y[0]  + y[1]  + ny[numberOfValues - len(r):] * s_z)   
                    - (1 + ny[numberOfValues - len(r):]) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j )
     
-    return np.vstack((dSigmadr,dSigmaPfi))
+    return np.vstack((dSigmadr,dSigmaPfidr))
 
 
 y_a = np.zeros((2, r.size))
@@ -250,20 +250,20 @@ plt.legend()
 print("ploten der Ableitungen der Materialparameter")
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
-plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
-plt.plot(r, dfourierFunctionNy_f(r) * 10**12, label="dFourierNy * 10^12")
-plt.xlabel("Radius in m")
-plt.ylabel("Änderung für dE in N/m^3 für dny in 1/m E12")
+#plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
+#plt.plot(r, dfourierFunctionNy_f(r) * 10**2, label="dFourierNy * 10^2")
+plt.xlabel("Radius in mm")
+plt.ylabel("Änderung für dE in N/mm^3 für dny in 1/mm E12")
 #plt.plot(r, radialForce_f(r), label="R")
 plt.legend()
 #plt.plot(r, dradialForce_f(r))
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
 plt.plot(r, dGradientE, label="dGradientE")
-plt.plot(r, dGradientNy * 10**12, label="dGradientNy * 10^12")
+plt.plot(r, dGradientNy * 10**2, label="dGradientNy * 10^2")
 plt.plot(r, calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j * 10, label="R * 10")
-plt.xlabel("Radius in m")
-plt.ylabel("Änderung für dE in N/m^3 für dny in 1/m")
+plt.xlabel("Radius in mm")
+plt.ylabel("Änderung für dE in N/mm^3 für dny in 1/mm")
 plt.legend()
 
 
@@ -271,32 +271,34 @@ plt.legend()
 ### Berechnen der Verschiebungen
 print("Berechnen der Verschiebungen")
 
-def calcDisplacement(r, s_r, s_phi, E, ny):
+def calcDisplacement(r, s_r, s_phi, s_z, E, ny):
     print("bbbbbbbbb")
-    print(type(E), type(ny), type(s_r), type(s_phi), type(r))
-    print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
-    u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
-    #u_r = r
+    #u_r = ( 1/E * (-ny * s_r + s_phi - ny * s_z) ) * r
+    u_r = r
     print("ccccccccc")
-    e_r = 1/E * (s_r - ny * s_phi)
-    #e_r = r
+    #e_r = 1/E * (s_r - ny * s_phi)
+    e_r = r
     print("test2")
     return([u_r, e_r])
 
 print("aaaa")
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
-u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, fourierFunctionE_f(r), fourierFunctionNy_f(r))[0]
+u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, s_z, fourierFunctionE, fourierFunctionNy)[0]
 print("test1")
-u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[0]
+u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, s_z, E, ny)[0]
 print("test3")
-u_rCaldwell = calcDisplacement(r,  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],  calcStresses(r=r, s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1], 100 * 10**9, 0.3)[0]
-plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
+#plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
 plt.plot(r, u_rGradient, label="u_r berechnet über BVP mit Differenzenquotient")
-plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
-#plt.plot(r, u_rCaldwell)
-plt.xlabel("Radius in m")
-plt.ylabel("u_r in m")
+plt.xlabel("Radius in mm")
+plt.ylabel("u_r in mm")
 plt.legend()
 
+####################################################################################################################
+### Fehlerplot
+print("berechnen des Fehlerplots")
+
+
+
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
 print("Fertig")
 plt.show()
