@@ -13,6 +13,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # # Sample data points (you can replace this with your actual data)
 # length = 100
 # data = np.ones(length) * 100 * 10**9 # E Modul
@@ -54,4 +55,15 @@ import matplotlib.pyplot as plt
 # plt.legend()
 # plt.show()
 
+from datetime import datetime # Nur für die Bennenung der Grafiken
+
+currentTime = datetime.now()
+
+# currentTime = str(currentTime.strftime("%H-%M%S"))[0:5]
+# pictureName = f"Bilder\Graphen{currentTime}.png"
+
+pictureName = f"Bilder\Graphen{currentTime.year}-{currentTime.month:02d}-{currentTime.day:02d}-{currentTime.hour:02d}-{currentTime.minute:02d}"
+
 plt.plot(np.linspace(0, 10, 100), np.linspace(0, 10, 100))
+plt.savefig(pictureName)
+plt.show()
