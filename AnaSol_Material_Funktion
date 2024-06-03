@@ -72,7 +72,7 @@ E[2::3] = E_ins
 # Dann können beliebig viele Materialien definiert werden und es müssen weniger parameter für jede funktion übergeben werden.
 # Ist das mit dem rest des Codes verbindbar und wie findest du es?
 def calcSprungstellen(r_innen, materialsWidth):
-    aktuelleSprungstelle = r_i
+    aktuelleSprungstelle = r_innen
     results = []
     for i in range(anzahlWindungen):
         for width in materialsWidth:
