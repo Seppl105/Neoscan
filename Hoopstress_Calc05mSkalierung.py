@@ -12,7 +12,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-numberOfValues = 10000 # Anzahl der Werte des r Vektors
+numberOfValues = 1000 # Anzahl der Werte des r Vektors
 
 #   Subplots
 anzahlRowPlots = 2
@@ -48,8 +48,8 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 #   Materialparameter
 
 E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
-#E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
-#E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
+E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
+E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
@@ -63,23 +63,37 @@ ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
 
 
 # Fuktionswert an der Stelle r über eine Fourierreihe aus den Fourierkoeffizienten bestimmen
-# def inverseFourier(r, coefficients, frequencies):
-#     n = len(coefficients)
-#     result = np.real(coefficients[0]) / n # konstanter Anteil
+def inverseFourier(r, coefficients, frequencies):
+    n = len(coefficients)
+    result = np.real(coefficients[0]) / n # konstanter Anteil
     
-#     for k in range(1, n//2):  # aus symmetriegründen nur die erste Hälfte der Freuqenzen zu betrachten
-#         amplitude = 2 * np.abs(coefficients[k]) / n  # Amplitude berechnen
-#         phase = np.angle(coefficients[k])  # Phase berechnen
-#         result += amplitude * smp.cos(2 * 3.141592653589793 * frequencies[k] * r + phase)
+    for k in range(1, n//2):  # aus symmetriegründen nur die erste Hälfte der Freuqenzen zu betrachten
+        amplitude = 2 * np.abs(coefficients[k]) / n  # Amplitude berechnen
+        phase = np.angle(coefficients[k])  # Phase berechnen
+        result += amplitude * smp.cos(2 * 3.141592653589793 * frequencies[k] * r + phase) # Nur Realteil interessant also bleibt nur der cos(.)
         
-#     return result
+    return result
 
 
-# # Fuktionswert an der Stelle r über eine Fourierreihe aus diskreten Inputwerten bestimmen
-# def getFourierSeries(r, inputFunction):
-#     fftInputFunction = np.fft.fft(inputFunction) # Koeffizienten der fft berechnet mit der Funktion fft aus dem fft package
-#     return inverseFourier(r, fftInputFunction, np.fft.fftfreq(len(inputFunction)))
+# Fuktionswert an der Stelle r über eine Fourierreihe aus diskreten Inputwerten bestimmen
+def FourierSeries(r, inputFunction):
+    fftInputFunction = np.fft.fft(inputFunction) # Koeffizienten der fft berechnet mit der Funktion fft aus dem fft package
+    return inverseFourier(r, fftInputFunction, np.fft.fftfreq(len(inputFunction)))
 
+def dFourierSeries(r, inputFunction):
+    fftInputFunction = np.fft.fft(inputFunction)
+    coefficients = fftInputFunction
+    frequencies = np.fft.fftfreq(len(inputFunction))
+    
+    n = len(coefficients)
+    result = np.real(coefficients[0]) / n # konstanter Anteil
+    
+    for k in range(1, n//2):  # aus symmetriegründen nur die erste Hälfte der Freuqenzen zu betrachten
+        amplitude = 2 * np.abs(coefficients[k]) / n  # Amplitude berechnen
+        phase = np.angle(coefficients[k])  # Phase berechnen
+        result += - amplitude * 2 * 3.141592653589793 * coefficients[k] * smp.sin(2 * 3.141592653589793 * frequencies[k] * r + phase) # wegen i als Vorfaktor durch die Ableitung ist für den Realteil nur -sin(.) interessant
+        
+    return result
 
 # Funktion die das Anfangswertproblem definiert zum lösen mit odeitn
 def dSdr(r, S):
@@ -88,12 +102,12 @@ def dSdr(r, S):
                 - 1/r * s_phi  + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * s_r   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (s_r + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * s_r  + s_phi  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)]
 
 
-# # input Function for solbvp with E(r) and ny(r) as Fourrier Series
-# def funcFourier(r, y):
-#     dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
-#     dSigmaPfidr = -1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (y[0] + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * y[0]  + y[1]  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)
+# input Function for solbvp with E(r) and ny(r) as Fourrier Series
+def funcFourier(r, y):
+    dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
+    dSigmaPfidr = -1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (y[0] + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * y[0]  + y[1]  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)
     
-#     return np.vstack((dSigmadr,dSigmaPfidr))
+    return np.vstack((dSigmadr,dSigmaPfidr))
 
 
 # definition of the boundary conditions for solving the bvp eacht element in the return array will be equal to zero for the solution
@@ -114,9 +128,9 @@ def funcGradient(r, y):
     # print(s_z)
     ##################################################################################################################
     lengthR = len(r)
-    E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-2)  # E Modul in N/m^2 * mSaklierung**(-2)
-    #E[:int(0.2* lengthR)] = 101 * 10**9 * mSkalierung**(-2)
-    #E[len(E) - int(0.2* lengthR):] = 101 * 10**9 * mSkalierung**(-2)
+    E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-1)  # E Modul in N/m^2 * mSaklierung**(-2)
+    E[:int(0.2* lengthR)] = 150 * 10**9 * mSkalierung**(-1)
+    E[len(E) - int(0.2* lengthR):] = 150 * 10**9 * mSkalierung**(-1)
 
     ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
     #ny[len(E) - int(0.2* lengthR):] = 0.25
@@ -125,8 +139,8 @@ def funcGradient(r, y):
     dGradientE = np.gradient(E)
     dGradientNy = np.gradient(ny)
 
-    dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
-    dSigmaPfidr = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
+    dSigmaR = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
+    dSigmaPfi = (-1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   
                    + ny * ds_z   + dGradientNy * (y[0] + s_z)   
                    + dGradientE * 1/E * (-ny * y[0]  + y[1]  + ny * s_z)   
                    - (1 + ny) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j )
@@ -142,7 +156,7 @@ def funcGradient(r, y):
     #                + dGradientE[numberOfValues - len(r):] * 1/E[numberOfValues - len(r):] * (-ny[numberOfValues - len(r):] * y[0]  + y[1]  + ny[numberOfValues - len(r):] * s_z)   
     #                - (1 + ny[numberOfValues - len(r):]) * calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j )
     
-    return np.vstack((dSigmadr,dSigmaPfidr))
+    return np.vstack((dSigmaR,dSigmaPfi))
 # def funcGradient(r, y):
 #     print("r: ",r[:10])
 #     print("r[len(r)- 5:]", r[len(r)- 5:])
@@ -169,45 +183,46 @@ def funcGradient(r, y):
 
 
 def calcDisplacement(r, s_r, s_phi, E, ny):
-    print("bbbbbbbbb")
-    print(type(E), type(ny), type(s_r), type(s_phi), type(r))
-    print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
+    #print(type(E), type(ny), type(s_r), type(s_phi), type(r))
+    #print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
     u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
-    #u_r = r
-    print("ccccccccc")
+    #print("ccccccccc")
     e_r = 1/E * (s_r - ny * s_phi)
     #e_r = r
-    print("test2")
+    #print("test2")
     return([u_r, e_r])
 
 ####################################################################################################################
 ######  Hauptprogramm
 
-### Berechnen der differenzierbaren Funktionen E(r) und Ny(r) und ihrer ersten Ableitungen nach r
-# print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitungen")
-# # E(r)
+## Berechnen der differenzierbaren Funktionen E(r) und Ny(r) und ihrer ersten Ableitungen nach r
+print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitungen")
 
+# E(r)
 x = smp.Symbol("x", real=True)
-# fourierFunctionE = getFourierSeries(x, E) # A function dependant on the "Symbol" x
-# #print(FourierFunctionE)
-# fourierFunctionE_f = smp.lambdify(x, fourierFunctionE) # Convert FourierFunctionEr to a numerical function for plotting
-# #FourierFunctionEr = getFourierSeries(np.linspace(0, len(r), len(r)*5), Er)
+fourierFunctionE = FourierSeries(x, E) # A function dependant on the "Symbol" x
+#print(FourierFunctionE)
+fourierFunctionE_f = smp.lambdify(x, fourierFunctionE) # Convert FourierFunctionEr to a numerical function for plotting
+#FourierFunctionEr = FourierSeries(np.linspace(0, len(r), len(r)*5), Er)
 
 
+# ny(r)
+fourierFunctionNy = FourierSeries(x, ny) # A function dependant on the "Symbol" x
+fourierFunctionNy_f = smp.lambdify(x, fourierFunctionNy) # Convert FourierFunctionEr to a numerical function for plotting
+#FourierFunctionNy = FourierSeries(np.linspace(0, len(r), len(r)*5), ny)
 
-# fourierFunctionNy = getFourierSeries(x, ny) # A function dependant on the "Symbol" x
-# fourierFunctionNy_f = smp.lambdify(x, fourierFunctionNy) # Convert FourierFunctionEr to a numerical function for plotting
-# #FourierFunctionNy = getFourierSeries(np.linspace(0, len(r), len(r)*5), ny)
 
+# dE(r)/dr
+dfourierFunctionE = smp.diff(fourierFunctionE, x)
+dfourierFunctionE_f = smp.lambdify(x, dfourierFunctionE)
+dFormulaFourierFunctionE = dFourierSeries(x, E)
+dFormulaFourierFunctionE_f = smp.lambdify(x, dFormulaFourierFunctionE)
 
-# # dE(r)/dr
-# dfourierFunctionE = smp.diff(fourierFunctionE, x)
-# dfourierFunctionE_f = smp.lambdify(x, dfourierFunctionE)
-
-# # dny(r)/dr
-# dfourierFunctionNy = smp.diff(fourierFunctionNy, x)
-# dfourierFunctionNy_f = smp.lambdify(x, dfourierFunctionNy)
-
+# dny(r)/dr
+dfourierFunctionNy = smp.diff(fourierFunctionNy, x)
+dfourierFunctionNy_f = smp.lambdify(x, dfourierFunctionNy)
+dFormulaFourierFunctionNy = dFourierSeries(x, ny)
+dFormulaFourierFunctionNy_f = smp.lambdify(x, dFormulaFourierFunctionNy)
 
 ### Bestimmen der Spannungen in radiale Richtungen s_r(r) und in Umfangsrichtung s_phi(r)
 
@@ -237,14 +252,13 @@ print("mit solvebvp")
 ##   mit Fourrierreiehn
 print("für Fourrierreihen")
 
-#Sguess = np.zeros((len(r), len(r)), dtype=float)
-# y_a = np.zeros((2, r.size))
+Sguess = np.zeros((len(r), len(r)), dtype=float)
+yInitialGuess = np.zeros((2, r.size))
 
-# y_b = np.zeros((2, r.size))
-# solBvpFourier = solve_bvp(funcFourier, bc, r, y_a)
+solBvpFourier = solve_bvp(funcFourier, bc, r, yInitialGuess)
 
-# s_rSolBvpFourier = solBvpFourier.sol(r)[0]
-# s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
+s_rSolBvpFourier = solBvpFourier.sol(r)[0]
+s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
 
 
 ## mit gradient
@@ -291,9 +305,9 @@ plt.plot(r , E, label="vorgegebenes E(r)")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"E-Modul in N/(m E{int(np.log10(mSkalierung))})^2")
 
-# plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-#          fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='E(r) mit Fourrierreihe genähert', linestyle='--')
-# plt.legend()
+plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
+         fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='E(r) mit Fourrierreihe genähert', linestyle='--')
+plt.legend()
 
 
 # ny(r)
@@ -302,9 +316,9 @@ plt.plot(r , ny, label="vorgegebenes ny(r)")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel("ny in 1")
 
-# plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-#          fourierFunctionNy_f(x=np.linspace(0, len(r), len(r) * 5)), label='ny(r) mit Fourrierreihe genähert', linestyle='--')
-# plt.legend()
+plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
+         fourierFunctionNy_f(x=np.linspace(0, len(r), len(r) * 5)), label='ny(r) mit Fourrierreihe genähert', linestyle='--')
+plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
@@ -330,14 +344,15 @@ plt.plot(r, s_phiSolBvpGradient, "--", label="s_phi berechnet als BVP mit Differ
 plt.legend()
 
 
-# plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
-# plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
-# plt.plot(r, dfourierFunctionNy_f(r) * 10**6, label="dFourierNy * 10^6")
-# plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
-# plt.ylabel(f"Änderung für dE in N/mm^3 für dny in 1/m E{int(np.log10(mSkalierung))} E2")
-# #plt.plot(r, radialForce_f(r), label="R")
-# plt.legend()
-# #plt.plot(r, dradialForce_f(r))
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
+plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
+#plt.plot(r, dfourierFunctionNy_f(r) * 10**6, label="dFourierNy * 10^6")
+#plt.plot(r, dFormulaFourierFunctionE_f(r), label="dFormulaFourierE")
+plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
+plt.ylabel(f"Änderung für dE in N/mm^3 für dny in 1/m E{int(np.log10(mSkalierung))} E2")
+#plt.plot(r, radialForce_f(r), label="R")
+plt.legend()
+#plt.plot(r, dradialForce_f(r))
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
