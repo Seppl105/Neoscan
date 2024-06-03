@@ -9,9 +9,12 @@ t = 0.36 # [mm] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
 t_con = 0.12 # [mm] Dicke des Bandleiters
 t_cow = 0.23 # [mm] Dicke des Cowindings
 t_ins = 0.01 # [mm] Dicke der Isolation
+materialsWidth = [t_con, t_cow, t_ins]
+
 E_con = 500 #* 10**9 # E-Modul Conductor
 E_cow = 450 #* 10**9 # E-Modul Cowinding
 E_ins = 400 #* 10**9 # E-Modul Insulation
+materialsE = [500, 450, 400]
 
 # Anteil der drei Materialien pro Wicklung bestimmen
 anteilConductor = t_con / t
@@ -28,6 +31,7 @@ def WindungsdickePrüfen(Conductor, Cowinding, Insulation, Windung):
         raise WindungsdickenError(f"Die Summe der Dicken der drei Layer ist nicht gleich der Windungsdicke t: {Windung} != {Conductor + Cowinding + Insulation}.")
     else:
         print("Abmaße einer Windung und der einzelnen Layer sind verträglich.")
+        
 try:
     WindungsdickePrüfen(t_con, t_cow, t_ins, t)
 except WindungsdickenError as e:
@@ -52,19 +56,34 @@ E[1::3] = E_cow
 E[2::3] = E_ins
 
 # Sprungstellen nach jeder Schichtdicke
-def calcSprungstellen(r_innen,con,cow,ins,n):
+# def calcSprungstellen(r_innen,con,cow,ins,n):
 
+#     results = []
+#     for i in range(anzahlWindungen):
+#         r_innen += con
+#         results.append(r_innen)
+#         r_innen += cow
+#         results.append(r_innen)
+#         r_innen += ins
+#         results.append(r_innen)
+#     return np.array(results)
+
+### Vorschlag:
+# Dann können beliebig viele Materialien definiert werden und es müssen weniger parameter für jede funktion übergeben werden.
+# Ist das mit dem rest des Codes verbindbar und wie findest du es?
+def calcSprungstellen(r_innen, materialsWidth):
+    aktuelleSprungstelle = r_i
     results = []
     for i in range(anzahlWindungen):
-        r_innen += con
-        results.append(r_innen)
-        r_innen += cow
-        results.append(r_innen)
-        r_innen += ins
-        results.append(r_innen)
+        for width in materialsWidth:
+            aktuelleSprungstelle += width
+            results.append(aktuelleSprungstelle)
+    
     return np.array(results)
 
-sprungstellen = calcSprungstellen(r_i,t_con,t_cow,t_ins, anzahlWindungen)
+
+#sprungstellen = calcSprungstellen(r_i,t_con,t_cow,t_ins, anzahlWindungen)
+sprungstellen = calcSprungstellen(r_i, materials)
 sprungstellen = sprungstellen[:-1] # eine Sprungstelle zu viel
 
 
@@ -114,7 +133,7 @@ def sumJumps(x,a,b,c,d):
 r = np.linspace(r_i, (r_i+anzahlWindungen*t), 360*anzahlWindungen)
 
 E = E_con + sumJumps(r,A,B,C,D)
-print(E[29
+#print(E[29
 E = E + E_con - E[0] 
 print(sumJumps(r,A,B,C,D))
 
