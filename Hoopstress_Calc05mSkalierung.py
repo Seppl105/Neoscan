@@ -4,7 +4,8 @@ import sympy as smp
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
 from functions.Hoopstress_Calc02Copy import calcStresses
-from functions.materials import calcE_r
+from functions.materials import calcMaterialTanhCoefficients
+from functions.materials import calcMaterialValue
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 ######## Bemerkungen
@@ -13,7 +14,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-numberOfValues = 1000 # Anzahl der Werte des r Vektors
+numberOfValues = 50000 # Anzahl der Werte des r Vektors
 
 #   Subplots
 anzahlRowPlots = 2
@@ -48,9 +49,24 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 
+t = 0.36 # [mm] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
+t_con = 0.12 # [mm] Dicke des Bandleiters
+t_cow = 0.23 # [mm] Dicke des Cowindings
+t_ins = 0.01 # [mm] Dicke der Isolation
+materialWidths = [t_con, t_cow, t_ins]
+
+E_con = 500 #* 10**9 # E-Modul Conductor
+E_cow = 450 #* 10**9 # E-Modul Cowinding
+E_ins = 400 #* 10**9 # E-Modul Insulation
+materialEs = [500, 450, 400]
+
+_,_,coefficientsE = calcMaterialTanhCoefficients(r_i * mSkalierung**(-1) * 10**3, r_a * mSkalierung**(-1) * 10**3, t, materialWidths, materialEs, steigung=2000)
+E = calcMaterialValue(r, coefficientsE, materialEs[0])
+print(E)
 #E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 #E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
 #E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
+
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
@@ -119,9 +135,9 @@ def bc(ya, yb):
  
 # input Function for solbvp with dE(r) and dny(r) calculated by the gradient
 def funcGradient(r, y):
-    print("r: ",r[:10])
-    print("r[len(r)- 5:]", r[len(r)- 5:])
-    print(np.shape(r), "r2")
+    #print("r: ",r[:10])
+    #print("r[len(r)- 5:]", r[len(r)- 5:])
+    #print(np.shape(r), "r2")
     # print(np.shape(y), "y")
     # #r = np.linspace(r_i, r_a, len(y[1]))
     # print(np.shape(r), "rlinspace")
@@ -132,7 +148,7 @@ def funcGradient(r, y):
     #E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-1)  # E Modul in N/m^2 * mSaklierung**(-2)
     #E[:int(0.2* lengthR)] = 150 * 10**9 * mSkalierung**(-1)
     #E[len(E) - int(0.2* lengthR):] = 150 * 10**9 * mSkalierung**(-1)
-    calcE_r()
+    E = calcMaterialValue(r, coefficientsE, materialEs[0])
 
     ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
     #ny[len(E) - int(0.2* lengthR):] = 0.25
@@ -202,29 +218,29 @@ print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitung
 
 # E(r)
 x = smp.Symbol("x", real=True)
-fourierFunctionE = FourierSeries(x, E) # A function dependant on the "Symbol" x
-#print(FourierFunctionE)
-fourierFunctionE_f = smp.lambdify(x, fourierFunctionE) # Convert FourierFunctionEr to a numerical function for plotting
-#FourierFunctionEr = FourierSeries(np.linspace(0, len(r), len(r)*5), Er)
+# fourierFunctionE = FourierSeries(x, E) # A function dependant on the "Symbol" x
+# #print(FourierFunctionE)
+# fourierFunctionE_f = smp.lambdify(x, fourierFunctionE) # Convert FourierFunctionEr to a numerical function for plotting
+# #FourierFunctionEr = FourierSeries(np.linspace(0, len(r), len(r)*5), Er)
 
 
-# ny(r)
-fourierFunctionNy = FourierSeries(x, ny) # A function dependant on the "Symbol" x
-fourierFunctionNy_f = smp.lambdify(x, fourierFunctionNy) # Convert FourierFunctionEr to a numerical function for plotting
-#FourierFunctionNy = FourierSeries(np.linspace(0, len(r), len(r)*5), ny)
+# # ny(r)
+# fourierFunctionNy = FourierSeries(x, ny) # A function dependant on the "Symbol" x
+# fourierFunctionNy_f = smp.lambdify(x, fourierFunctionNy) # Convert FourierFunctionEr to a numerical function for plotting
+# #FourierFunctionNy = FourierSeries(np.linspace(0, len(r), len(r)*5), ny)
 
 
-# dE(r)/dr
-dfourierFunctionE = smp.diff(fourierFunctionE, x)
-dfourierFunctionE_f = smp.lambdify(x, dfourierFunctionE)
-dFormulaFourierFunctionE = dFourierSeries(x, E)
-dFormulaFourierFunctionE_f = smp.lambdify(x, dFormulaFourierFunctionE)
+# # dE(r)/dr
+# dfourierFunctionE = smp.diff(fourierFunctionE, x)
+# dfourierFunctionE_f = smp.lambdify(x, dfourierFunctionE)
+# dFormulaFourierFunctionE = dFourierSeries(x, E)
+# dFormulaFourierFunctionE_f = smp.lambdify(x, dFormulaFourierFunctionE)
 
-# dny(r)/dr
-dfourierFunctionNy = smp.diff(fourierFunctionNy, x)
-dfourierFunctionNy_f = smp.lambdify(x, dfourierFunctionNy)
-dFormulaFourierFunctionNy = dFourierSeries(x, ny)
-dFormulaFourierFunctionNy_f = smp.lambdify(x, dFormulaFourierFunctionNy)
+# # dny(r)/dr
+# dfourierFunctionNy = smp.diff(fourierFunctionNy, x)
+# dfourierFunctionNy_f = smp.lambdify(x, dfourierFunctionNy)
+# dFormulaFourierFunctionNy = dFourierSeries(x, ny)
+# dFormulaFourierFunctionNy_f = smp.lambdify(x, dFormulaFourierFunctionNy)
 
 ### Bestimmen der Spannungen in radiale Richtungen s_r(r) und in Umfangsrichtung s_phi(r)
 
@@ -254,13 +270,13 @@ print("mit solvebvp")
 ##   mit Fourrierreiehn
 print("für Fourrierreihen")
 
-Sguess = np.zeros((len(r), len(r)), dtype=float)
-yInitialGuess = np.zeros((2, r.size))
+# Sguess = np.zeros((len(r), len(r)), dtype=float)
+# yInitialGuess = np.zeros((2, r.size))
 
-solBvpFourier = solve_bvp(funcFourier, bc, r, yInitialGuess)
+# solBvpFourier = solve_bvp(funcFourier, bc, r, yInitialGuess)
 
-s_rSolBvpFourier = solBvpFourier.sol(r)[0]
-s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
+# s_rSolBvpFourier = solBvpFourier.sol(r)[0]
+# s_phiSolBvpFourier = solBvpFourier.sol(r)[1]
 
 
 ## mit gradient
@@ -281,6 +297,21 @@ print("solbvp results:\n solStatus (0 wenn alles geklappt hat): ", solBvpGradien
 
 s_rSolBvpGradient = solBvpGradient.sol(r)[0]  * mSkalierung**(-1)  # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
 s_phiSolBvpGradient = solBvpGradient.sol(r)[1]  * mSkalierung**(-1)   # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
+
+# print("für die tanh Funktion")
+
+# dGradientE = np.gradient(E)
+# dGradientNy = np.gradient(ny)
+# #print(np.shape(dGradientE))
+# #print(np.shape(E))
+# #print(np.shape(dGradientNy))
+# #print(np.shape(ny))
+# #print(np.shape(r), "r")
+# solBvpGradient = solve_bvp(funcGradient, bc, r, yInitialGuess, max_nodes=10000)
+# print("solbvp results:\n solStatus (0 wenn alles geklappt hat): ", solBvpGradient.status, "\nsolmessage: ", solBvpGradient.message)
+
+# s_rSolBvpGradient = solBvpGradient.sol(r)[0]  * mSkalierung**(-1)  # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
+# s_phiSolBvpGradient = solBvpGradient.sol(r)[1]  * mSkalierung**(-1)   # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
 
 
 # ###################### lösen der Gleichung (e) also einer DGL 2. Ordnung durch überführen in ein DGL System mit DGLs 1. Ordnung
@@ -307,9 +338,9 @@ plt.plot(r , E, label="vorgegebenes E(r)")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"E-Modul in N/(m E{int(np.log10(mSkalierung))})^2")
 
-plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-         fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='E(r) mit Fourrierreihe genähert', linestyle='--')
-plt.legend()
+#plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
+#         fourierFunctionE_f(x=np.linspace(0, len(r), len(r) * 5)), label='E(r) mit Fourrierreihe genähert', linestyle='--')
+#plt.legend()
 
 
 # ny(r)
@@ -318,9 +349,9 @@ plt.plot(r , ny, label="vorgegebenes ny(r)")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel("ny in 1")
 
-plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
-         fourierFunctionNy_f(x=np.linspace(0, len(r), len(r) * 5)), label='ny(r) mit Fourrierreihe genähert', linestyle='--')
-plt.legend()
+# plt.plot(np.linspace(r_i, r_a, numberOfValues*5), 
+#          fourierFunctionNy_f(x=np.linspace(0, len(r), len(r) * 5)), label='ny(r) mit Fourrierreihe genähert', linestyle='--')
+# plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
@@ -347,7 +378,7 @@ plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
-plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
+#plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
 #plt.plot(r, dfourierFunctionNy_f(r) * 10**6, label="dFourierNy * 10^6")
 #plt.plot(r, dFormulaFourierFunctionE_f(r), label="dFormulaFourierE")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")

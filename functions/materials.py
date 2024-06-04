@@ -1,6 +1,6 @@
 import numpy as np
 
-def calcMaterialFunction(r_innen, r_aussen, t, materialWidths, materialValues, steigung):
+def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialValues, steigung):
     numberOfMaterials = len(materialWidths)
     '''Berechnet diskret die differenzierbare Funktion E(r)'''
 
@@ -80,6 +80,7 @@ def calcMaterialFunction(r_innen, r_aussen, t, materialWidths, materialValues, s
     # Windungszahl berechnen
     windungen = lambda x, y, z: (x - y) / z
     anzahlWindungen = int(windungen(r_aussen, r_innen, t))  # i.d.R sind es 600/q Windungen
+    print("Anzahl der Windungen: ",  anzahlWindungen )
 
 
     # f(x) = A * tanh(B*x + C) + D
@@ -109,14 +110,28 @@ def calcMaterialFunction(r_innen, r_aussen, t, materialWidths, materialValues, s
     A = np.array(calcA(E))
     C = calcC(B, sprungstellen)
     D = calcD(E[:-1], abs(A))
-    print(A.size, B.size, C.size, D.size)
+    #print(A.size, B.size, C.size, D.size)
     # Diskretisierung des Radius' für alle Windungen
     r = np.linspace(r_innen, (r_innen + anzahlWindungen * t), 360 * anzahlWindungen)
     # Berechnung des E-Moduls über den Radius diskretisiert
     E = materialValues[0] + sumJumps(r, A, B, C, D)
-    E = E + materialValues[0] - E[0] # nochmal nachvollziehen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    #E = E + materialValues[0] - E[0] # nochmal nachvollziehen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    return r, E
+    return r, E, [A, B, C, D]
+
+def calcMaterialValue(r, coefficients, E0):
+    def sumJumps(x, a, b, c, d, axis):
+        '''Summiert über alle tanh-Funktionen'''
+        return np.sum(a * np.tanh(b * x + c) + d, axis=axis)
+    #print(np.ma.isarray(r), r)
+    if not isinstance(r, np.ndarray):
+        E = E0 + sumJumps(r, coefficients[0], coefficients[1], coefficients[2], coefficients[3], 0)
+    else:
+        E = []
+        for value in r:
+            #print("e")
+            E = np.append(E, E0 + sumJumps(value, coefficients[0], coefficients[1], coefficients[2], coefficients[3], 0))
+    return np.array(E)
 
 
 ### So wird die Funktion bisher aufgerufen

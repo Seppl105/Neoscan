@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime # Nur für die Bennenung der Grafiken
-from functions.materials import calcMaterialFunction
+from functions.materials import calcMaterialTanhCoefficients
+from functions.materials import calcMaterialValue
 
 # import numpy as np
 
@@ -38,14 +39,19 @@ anteilConductor = t_con / t
 anteilCowinding = t_cow / t
 anteilInsulation = t_ins / t
 
-for i in range(5):
-    print(i)
+#for i in range(5):
+#    print(i)
 
-r,E = calcMaterialFunction(r_i,r_a,t,[t_con,t_cow + t_ins],[E_con,E_cow],steigung=1000)
-
+r,E,cof  = calcMaterialTanhCoefficients(r_i,r_a,t,[t_con,t_cow + t_ins],[E_con,E_cow],steigung=1000)
+print("Erste Berechnung abgeschllossen")
 # Plot E(r) für alle Windungen
 plt.figure(figsize=(8, 6))
 plt.plot(r, E, label='E(r) in N/mm^2', color='b')
+plt.plot(r, calcMaterialValue(r, cof, materialsE[0]))
+plt.scatter(434, calcMaterialValue(434, cof, materialsE[0]))
+plt.scatter(434.3245, calcMaterialValue(434.3245, cof, materialsE[0]))
+plt.scatter(432.23, calcMaterialValue(432.23, cof, materialsE[0]))
+plt.scatter(434.32, calcMaterialValue(436.32, cof, materialsE[0]))
 # Lable und Titel hinzufügen
 plt.xlabel('r')
 plt.ylabel('E(r)')
