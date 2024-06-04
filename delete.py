@@ -3,7 +3,7 @@ import numpy as np
 import sympy as smp
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
-from Hoopstress_Calc02Copy import calcStresses
+from Functions.Hoopstress_Calc02Copy import calcStresses
 
 
 #####   Definierte 

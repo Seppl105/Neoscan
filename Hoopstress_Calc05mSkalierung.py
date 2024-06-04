@@ -3,7 +3,8 @@ import numpy as np
 import sympy as smp
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
-from Hoopstress_Calc02Copy import calcStresses
+from functions.Hoopstress_Calc02Copy import calcStresses
+from functions.materials import calcE_r
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 ######## Bemerkungen
@@ -47,9 +48,9 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 #   Materialparameter
 
-E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
-E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
-E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
+#E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
+#E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
+#E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
 
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
@@ -105,9 +106,9 @@ def dSdr(r, S):
 # input Function for solbvp with E(r) and ny(r) as Fourrier Series
 def funcFourier(r, y):
     dSigmadr = 1/r * y[1]   - calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   - 1/r * y[0],
-    dSigmaPfidr = -1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (y[0] + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * y[0]  + y[1]  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)
+    dSigmaPfi = -1/r * y[1]   + calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j   + 1/r * y[0]   + fourierFunctionNy_f(r) * ds_z   + dfourierFunctionNy_f(r) * (y[0] + s_z)   + dfourierFunctionE_f(r) * 1/fourierFunctionE_f(r) * (-fourierFunctionNy_f(r) * y[0]  + y[1]  + fourierFunctionNy_f(r) * s_z)   - (1 + fourierFunctionNy_f(r)) * radialForce_f(r)
     
-    return np.vstack((dSigmadr,dSigmaPfidr))
+    return np.vstack((dSigmadr,dSigmaPfi))
 
 
 # definition of the boundary conditions for solving the bvp eacht element in the return array will be equal to zero for the solution
@@ -128,9 +129,10 @@ def funcGradient(r, y):
     # print(s_z)
     ##################################################################################################################
     lengthR = len(r)
-    E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-1)  # E Modul in N/m^2 * mSaklierung**(-2)
-    E[:int(0.2* lengthR)] = 150 * 10**9 * mSkalierung**(-1)
-    E[len(E) - int(0.2* lengthR):] = 150 * 10**9 * mSkalierung**(-1)
+    #E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-1)  # E Modul in N/m^2 * mSaklierung**(-2)
+    #E[:int(0.2* lengthR)] = 150 * 10**9 * mSkalierung**(-1)
+    #E[len(E) - int(0.2* lengthR):] = 150 * 10**9 * mSkalierung**(-1)
+    calcE_r()
 
     ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
     #ny[len(E) - int(0.2* lengthR):] = 0.25

@@ -1,3 +1,8 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime # Nur für die Bennenung der Grafiken
+from functions.materials import calcMaterialFunction
+
 # import numpy as np
 
 # array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -10,9 +15,47 @@
 # print(len(Er[-5:]))
 # print(len(Er[-50:]))
 
-import numpy as np
-import matplotlib.pyplot as plt
 
+
+#############################################################################
+
+# Eigenschaften der Spule
+r_i = 430 # [mm] innerer Radius
+r_a = 646 # [mm] äußerer Radius
+t = 0.36 # [mm] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
+t_con = 0.12 # [mm] Dicke des Bandleiters
+t_cow = 0.23 # [mm] Dicke des Cowindings
+t_ins = 0.01 # [mm] Dicke der Isolation
+materialsWidth = [t_con, t_cow, t_ins]
+
+E_con = 500 #* 10**9 # E-Modul Conductor
+E_cow = 450 #* 10**9 # E-Modul Cowinding
+E_ins = 400 #* 10**9 # E-Modul Insulation
+materialsE = [500, 450, 400]
+
+# Anteil der drei Materialien pro Wicklung bestimmen
+anteilConductor = t_con / t
+anteilCowinding = t_cow / t
+anteilInsulation = t_ins / t
+
+for i in range(5):
+    print(i)
+
+r,E = calcMaterialFunction(r_i,r_a,t,[t_con,t_cow + t_ins],[E_con,E_cow],steigung=1000)
+
+# Plot E(r) für alle Windungen
+plt.figure(figsize=(8, 6))
+plt.plot(r, E, label='E(r) in N/mm^2', color='b')
+# Lable und Titel hinzufügen
+plt.xlabel('r')
+plt.ylabel('E(r)')
+plt.title('E(r) durch Tangens Hyperbolicus genähert')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+
+#############################################################################
 
 # # Sample data points (you can replace this with your actual data)
 # length = 100
@@ -55,15 +98,15 @@ import matplotlib.pyplot as plt
 # plt.legend()
 # plt.show()
 
-from datetime import datetime # Nur für die Bennenung der Grafiken
 
-currentTime = datetime.now()
+# currentTime = datetime.now()
 
-# currentTime = str(currentTime.strftime("%H-%M%S"))[0:5]
-# pictureName = f"Bilder\Graphen{currentTime}.png"
+# # currentTime = str(currentTime.strftime("%H-%M%S"))[0:5]
+# # pictureName = f"Bilder\Graphen{currentTime}.png"
 
-pictureName = f"Bilder\Graphen{currentTime.year}-{currentTime.month:02d}-{currentTime.day:02d}-{currentTime.hour:02d}-{currentTime.minute:02d}"
+# pictureName = f"Bilder\Graphen{currentTime.year}-{currentTime.month:02d}-{currentTime.day:02d}-{currentTime.hour:02d}-{currentTime.minute:02d}"
 
-plt.plot(np.linspace(0, 10, 100), np.linspace(0, 10, 100))
-plt.savefig(pictureName)
-plt.show()
+# plt.plot(np.linspace(0, 10, 100), np.linspace(0, 10, 100))
+# plt.savefig(pictureName)
+# plt.show()
+
