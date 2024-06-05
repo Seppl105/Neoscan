@@ -112,6 +112,13 @@ def calcMaterialValue(r, coefficients, E0):
     return np.array(E)
 
 
+def calcE_r(r, coeff, materialValues, E):
+    E_r = np.zeros_like(r)
+    for i in range(len(coeff[0])):
+        E_r += coeff[0][i] * np.tanh(coeff[1][i] * r + coeff[2][i]) + coeff[3][i]
+    E_r += materialValues[0]
+    E_r = E_r - E[0] + materialValues[0]
+    return E_r
 
 
 
@@ -128,16 +135,8 @@ s = 500
 r, E, E_o, [A, B, C, D] = calcMaterialTanhCoefficients(r_i,r_a,t,mt,mE,s)
 koeffizieten = [A, B, C, D]
 
-def calcE_r(r, coeff, materialValues, E):
-    E_r = np.zeros_like(r)
-    for i in range(len(coeff[0])):
-        E_r += coeff[0][i] * np.tanh(coeff[1][i] * r + coeff[2][i]) + coeff[3][i]
-    E_r += materialValues[0]
-    E_r = E_r - E[0] + materialValues[0]
-    return E_r
 
-
-# Beispielhafte Berechnung an der Stelle r = 500
+# Beispielhafte Berechnung an der Stelle r = []
 r_value = np.array([499.3, 500.0, 544.6])
 E_r = calcE_r(r_value, koeffizieten, mE, E_o)
 # E_r = mt[0] + calcE_r(r=r_value, coeff=koeffizieten) - calcE_r(r=r_i, coeff=koeffizieten)
