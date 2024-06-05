@@ -47,9 +47,22 @@ def fourier_series(t, coefficients, frequencies):
 # Reconstruct the function
 reconstructed_function = fourier_series(tManyValues, coefficients, frequencies)
 
-# Plot the original data and the reconstructed function
-plt.figure(figsize=(12, 6))
-plt.plot(t, data, label='Original Data')
-plt.plot(tManyValues, reconstructed_function, label='Reconstructed Function', linestyle='--')
-plt.legend()
-plt.show()
+# a = range(10)
+# print(a)
+# print(a[1:])
+# print(a[:-1])
+
+# # Plot the original data and the reconstructed function
+# plt.figure(figsize=(12, 6))
+# plt.plot(t, data, label='Original Data')
+# plt.plot(tManyValues, reconstructed_function, label='Reconstructed Function', linestyle='--')
+# plt.legend()
+# plt.show()
+b = np.ones(5)
+x = np.ones(7)
+c = np.array(range(5))
+print(b.size)
+print(x.size)
+print(np.outer(x, b))
+print(np.outer(x, b) + c)
+print(np.sum(np.outer(x, b) + c, axis=1))
