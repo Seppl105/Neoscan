@@ -119,7 +119,6 @@ print(r_value)
 print(E_r)
 
 
-# und geplottet
 # Plot E(r) für alle Windungen
 
 plt.figure(figsize=(8, 6))
