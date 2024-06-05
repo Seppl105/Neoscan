@@ -54,7 +54,8 @@ def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialV
 
     def sumJumps(x, a, b, c, d):
         '''Summiert über alle tanh-Funktionen'''
-        return np.sum(a * np.tanh(np.outer(x, b) + c) + d, axis=1)
+        print()
+        return np.sum(a * np.tanh(np.outer(b * x) + c) + d, axis=1)
 
     try:
         WindungsdickePrüfen(materialWidths, t)
@@ -86,7 +87,7 @@ def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialV
     # print(A.size, B.size, C.size, D.size)
     print(A)
     # Diskretisierung des Radius' für alle Windungen
-    r = np.linspace(r_innen, (r_innen + anzahlWindungen * t), 720 * anzahlWindungen)
+    r = np.linspace(r_innen, (r_innen + anzahlWindungen * t), 360 * anzahlWindungen)
     # Berechnung des E-Moduls über den Radius diskretisiert
     E_o = materialValues[0] + sumJumps(r, A, B, C, D)
     E = E_o + materialValues[0] - E_o[0] # nochmal nachvollziehen !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -132,7 +133,7 @@ r_a = 646 # [m] äußerer Radius
 t = 0.36 # [mm] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
 mt = np.array([0.12,0.23,0.01])
 mE = np.array([500,450,400])
-s = 1000
+s = 500
 
 r, E_o, E, [A, B, C, D] = calcMaterialTanhCoefficients(r_i,r_a,t,mt,mE,s)
 koeffizieten = [A, B, C, D]
