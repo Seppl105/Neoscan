@@ -42,6 +42,7 @@ anteilInsulation = t_ins / t
 #for i in range(5):
 #    print(i)
 
+
 r,E,cof  = calcMaterialTanhCoefficients(r_i,r_a,t,[t_con,t_cow + t_ins],[E_con,E_cow],steigung=1000)
 print("Erste Berechnung abgeschllossen")
 # Plot E(r) für alle Windungen
@@ -94,8 +95,14 @@ plt.show()
         
 #     return result
 
-# # Reconstruct the function
-# reconstructed_function = fourier_series(tManyValues, coefficients, frequencies)
+
+# Reconstruct the function
+#reconstructed_function = fourier_series(tManyValues, coefficients, frequencies)
+
+# a = range(10)
+# print(a)
+# print(a[1:])
+# print(a[:-1])
 
 # # Plot the original data and the reconstructed function
 # plt.figure(figsize=(12, 6))
@@ -103,7 +110,14 @@ plt.show()
 # plt.plot(tManyValues, reconstructed_function, label='Reconstructed Function', linestyle='--')
 # plt.legend()
 # plt.show()
-
+b = np.ones(5)
+x = np.ones(7)
+c = np.array(range(5))
+print(b.size)
+print(x.size)
+print(np.outer(x, b))
+print(np.outer(x, b) + c)
+print(np.sum(np.outer(x, b) + c, axis=1))
 
 # currentTime = datetime.now()
 
@@ -115,4 +129,3 @@ plt.show()
 # plt.plot(np.linspace(0, 10, 100), np.linspace(0, 10, 100))
 # plt.savefig(pictureName)
 # plt.show()
-
