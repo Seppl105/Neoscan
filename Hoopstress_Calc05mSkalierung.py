@@ -15,7 +15,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
 windingDivisor = 60          # Es wird für 600/windingDivisor Windungen gerechnet
-numberOfValues = int(500000 / windingDivisor) # Anzahl der Werte des r Vektors
+numberOfValues = int(100000 / windingDivisor) # Anzahl der Werte des r Vektors
 
 #   Subplots
 anzahlRowPlots = 2
@@ -338,8 +338,8 @@ u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)
 #                                                        calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**(2))[1], 
 #                                100 * 10**9, 0.3)[0] #########################################################################################################
 #                 * mSkalierung**1)      # Berechnung von calc Displacement in SI Basiseinheiten und dann Umrechnung von m in mm
-u_rCaldwell = 1000**(-1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
-                                                                   mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+u_rCaldwell = 1000**(-1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-1) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-1) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
                                 E[0], ny[0])[0]
 
 ##### Plots
