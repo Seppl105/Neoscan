@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime # Nur für die Bennenung der Grafiken
-from functions.materials import calcMaterialTanhCoefficients
-from functions.materials import calcMaterialValue
+from delete.materials import calcMaterialTanhCoefficients
+from delete.materials import calcMaterialValue
 
 # import numpy as np
 

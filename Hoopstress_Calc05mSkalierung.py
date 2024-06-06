@@ -4,8 +4,8 @@ import sympy as smp
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
 from functions.Hoopstress_Calc02Copy import calcStresses
-from functions.materials import calcMaterialTanhCoefficients
-from functions.materials import calcMaterialValue
+from functions.calcMaterialFunction import calcMaterialTanhCoefficients
+from functions.calcMaterialFunction import calcTanhValue
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 ######## Bemerkungen
@@ -14,7 +14,8 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-numberOfValues = 50000 # Anzahl der Werte des r Vektors
+windingDivisor = 60          # Es wird für 600/windingDivisor Windungen gerechnet
+numberOfValues = int(500000 / windingDivisor) # Anzahl der Werte des r Vektors
 
 #   Subplots
 anzahlRowPlots = 2
@@ -23,19 +24,39 @@ anzahlColumnPlots = 4
 #   Spannungsrandbedingungen
 
 #s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
-#s_ra = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
-#s_ri = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
+s_ra = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
+s_ri = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
 s_z0 = 0
 s_z = s_z0
 ds_z = 0
-s_r0 = 0
-s_phi0 = 4.3264372825278825 * 10**8 * mSkalierung**(-1)     # N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
+#s_r0 = 0
+#s_phi0 = 4.3264372825278825 * 10**8 * mSkalierung**(-1)     # N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 
+
+#   Materialparameter
+
+t = 0.36 * 10**(-3) * mSkalierung     # [m] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
+t_con = 0.12 * 10**(-3) * mSkalierung # [m] Dicke des Bandleiters
+t_cow = 0.23 * 10**(-3) * mSkalierung # [m] Dicke des Cowindings
+t_ins = 0.01 * 10**(-3) * mSkalierung # [m] Dicke der Isolation
+materialWidths = [t_con, t_cow, t_ins]
+
+E_con = 280 * 10**9 * mSkalierung**(-1) # E-Modul Conductor
+E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
+E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
+materialEs = [500, 450, 400]
+
+ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
+ny_cow = 0.3 # Possion's Ratio Cowinding
+ny_ins = 0.4 # Possion's Ratio Insulation
+materialNys = [0.35, 0.3, 0.4]
 
 #   Konstanten des Versuchsaufbau
 
 r_i = 0.430 * mSkalierung               # [m] innerer radius
 r_a = 0.646 * mSkalierung               # [m] äußerer radius
+r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))
+
 r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
 
 j = 114.2 * 10**6 * mSkalierung**(-2)       # [A/m^2] Stromdichte
@@ -47,21 +68,8 @@ b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleich
 def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
     return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
 
-#   Materialparameter
-
-t = 0.36 # [mm] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
-t_con = 0.12 # [mm] Dicke des Bandleiters
-t_cow = 0.23 # [mm] Dicke des Cowindings
-t_ins = 0.01 # [mm] Dicke der Isolation
-materialWidths = [t_con, t_cow, t_ins]
-
-E_con = 500 #* 10**9 # E-Modul Conductor
-E_cow = 450 #* 10**9 # E-Modul Cowinding
-E_ins = 400 #* 10**9 # E-Modul Insulation
-materialEs = [500, 450, 400]
-
-_,_,coefficientsE = calcMaterialTanhCoefficients(r_i * mSkalierung**(-1) * 10**3, r_a * mSkalierung**(-1) * 10**3, t, materialWidths, materialEs, steigung=2000)
-E = calcMaterialValue(r, coefficientsE, materialEs[0])
+coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
+E = calcTanhValue(r, coefficientsE, materialEs)
 print(E)
 #E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 #E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
@@ -71,9 +79,13 @@ print(E)
 #ny = 0.3             # [-] possion's ratio
 #p = 1 - ny # [-] const.
 
-ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
+#ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
+coefficientsNy = calcMaterialTanhCoefficients(r_i, r_a, t, materialWidths, materialNys, slope=1000, scale=720)
+ny = calcTanhValue(r, coefficientsNy, materialNys)
 #ny[len(E) - int(0.2* numberOfValues):] = 0.25
 #ny[:int(0.2* numberOfValues)] = 0.25
+
+
 
 ####################################################################################################################
 ##### Funktionsdefinition
@@ -144,13 +156,13 @@ def funcGradient(r, y):
     # print(np.shape(s_z))
     # print(s_z)
     ##################################################################################################################
-    lengthR = len(r)
+    #lengthR = len(r)
     #E = np.ones(lengthR) * 100 * 10**9 * mSkalierung**(-1)  # E Modul in N/m^2 * mSaklierung**(-2)
     #E[:int(0.2* lengthR)] = 150 * 10**9 * mSkalierung**(-1)
     #E[len(E) - int(0.2* lengthR):] = 150 * 10**9 * mSkalierung**(-1)
-    E = calcMaterialValue(r, coefficientsE, materialEs[0])
-
-    ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
+    E = calcTanhValue(r, coefficientsE, materialEs)
+    ny = calcTanhValue(r, coefficientsNy, materialNys)
+    #ny = np.ones(lengthR) * 0.3 # Querkontraktionszahl
     #ny[len(E) - int(0.2* lengthR):] = 0.25
     #ny[:int(0.2* lengthR)] = 0.25
     
@@ -214,7 +226,7 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
 ######  Hauptprogramm
 
 ## Berechnen der differenzierbaren Funktionen E(r) und Ny(r) und ihrer ersten Ableitungen nach r
-print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitungen")
+#print("Berechne Fourrierreihen für E, ny und R und die entsprechenden Ableitungen")
 
 # E(r)
 x = smp.Symbol("x", real=True)
@@ -292,11 +304,11 @@ dGradientNy = np.gradient(ny)
 #print(np.shape(dGradientNy))
 #print(np.shape(ny))
 #print(np.shape(r), "r")
-solBvpGradient = solve_bvp(funcGradient, bc, r, yInitialGuess, max_nodes=10000)
+solBvpGradient = solve_bvp(funcGradient, bc, r, yInitialGuess, max_nodes=numberOfValues * 2)
 print("solbvp results:\n solStatus (0 wenn alles geklappt hat): ", solBvpGradient.status, "\nsolmessage: ", solBvpGradient.message)
 
-s_rSolBvpGradient = solBvpGradient.sol(r)[0]  * mSkalierung**(-1)  # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
-s_phiSolBvpGradient = solBvpGradient.sol(r)[1]  * mSkalierung**(-1)   # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
+s_rSolBvpGradient = solBvpGradient.sol(r)[0]
+s_phiSolBvpGradient = solBvpGradient.sol(r)[1]
 
 # print("für die tanh Funktion")
 
@@ -326,11 +338,23 @@ u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)
 #                                                        calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**(2))[1], 
 #                                100 * 10**9, 0.3)[0] #########################################################################################################
 #                 * mSkalierung**1)      # Berechnung von calc Displacement in SI Basiseinheiten und dann Umrechnung von m in mm
-u_rCaldwell = calcDisplacement(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
-                                mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
-                                E[0], 0.3)[0]
+u_rCaldwell = 1000**(-1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+                                E[0], ny[0])[0]
 
 ##### Plots
+#rTest = np.linspace(r_i, r_a, 5000)
+# sArray = calcStresses(rTest, 0, 0, 0, 0.3, b_za, b_zi, b_0, j)
+
+# ax1 = plt.subplot(2,1,1)
+# ax1.plot(rTest, sArray[0])
+# ax2 = plt.subplot(2,1,2)
+# ax2.plot(rTest, sArray[1])
+# plt.title("wirklich jonas")
+# #ax1.xlabel("testtesttest")
+# plt.show()
+
+
 
 # E(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
@@ -363,17 +387,24 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"s_phi in N/(m E{int(np.log10(mSkalierung))})^2")
 
+# print(mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0])
+#print(mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0])
+
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, s_rSolBvpFourier, label="s_r berechnet als BVP mit Fourierreihe")
-plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0], label="s_r nach Caldwell")
-plt.plot(r, s_rSolBvpGradient, "--", label="s_r berechnet als BVP mit Differenzenquotienten") 
+plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ra=s_ra, s_ri=s_ri, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2) [0], label="s_r nach Caldwell")
+# plt.plot(rTest, calcStresses(rTest,r_a,r_i, 0, 0, 0, 0.3, b_za, b_zi, b_0, j)[0], label="s_r nach Caldwell")
+
+plt.plot(r, s_rSolBvpGradient * mSkalierung**(-1), "--", label="s_r berechnet als BVP mit Differenzenquotienten") 
+ # für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 #plt.plot(r, s_phiSolBvpFourier, label="s_phi berechnet als BVP mit Fourierreihe")
-plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="s_phi nach Caldwell")
-plt.plot(r, s_phiSolBvpGradient, "--", label="s_phi berechnet als BVP mit Differenzenquotienten") 
+plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="s_phi nach Caldwell")
+plt.plot(r, s_phiSolBvpGradient * mSkalierung**(-1), "--", label="s_phi berechnet als BVP mit Differenzenquotienten") 
+# für die Spannungen gilt kg/(s^2mm) = kg/(s^2 mm^2/mm) = (kg mm/s^2) / mm^2 = (kg m * 10-3 /s^2) / mm^2 = N/mm^2 * 10-3
 plt.legend()
 
 
@@ -389,7 +420,7 @@ plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
-plt.plot(r, dGradientE, label="dGradientE")
+plt.plot(r, dGradientE * 10**3, label="dGradientE * 10^3")
 plt.plot(r, dGradientNy * 10**6, label="dGradientNy * 10^6")
 plt.plot(r, calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j * 10, label="R * 10")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
