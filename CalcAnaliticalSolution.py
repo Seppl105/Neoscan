@@ -167,7 +167,7 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
     
         
     ###Berechnen der Spannungen im innersten Torus
-    r = np.linspace(rCenter, rEnds[0], valuesiiiiiiiiiiiiiiiiiiiiiiii)
+    r = np.linspace(rCenter, rEnds[0], rValuesPerMaterial)
     s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/r**2) 
                 - ((1 + ny[0]) / 2) * calcIntegral(0, r, rExterior, rCenter, j, b_za, b_zi, b_0)
                 -  (1/r**2) * (1 - (1 + ny[0])/2 ) * calcIntegral(2, r, rExterior, rCenter, j, b_za, b_zi, b_0)
@@ -182,6 +182,23 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
                  + s_rCenter
                  - s_rArray )
     
-    for 
+    for winding in range(windings-1):
+        rNew = np.linspace()######################################################
+        winding += 1
+        s_rArrayNew = (  (1/2) * result[3*winding] * (1 - rEnds[winding - 1]**2/rNew**2) 
+                    - ((1 + ny( (rEnds[winding]-rEnds[winding-1]/2) )) / 2) * calcIntegral(0, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
+                    -  (1/rNew**2) * (1 - (1 + ny( (rEnds[winding]-rEnds[winding-1]/2) ))/2 ) * calcIntegral(2, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
+                    +  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2))))
+        
+        s_phiArrayNew = ( (result[3*winding] - ny[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_z0)  
+                        +  ny[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_z  
+                        -  (ny[ (rEnds[winding]-rEnds[winding-1]/2) ] + 1) * calcIntegral(0, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
+                        + result[3*winding - 1]
+                        - s_rArrayNew )
+        
+        s_rArray = np.append(s_rArray, s_rArrayNew)
+        s_phiArrayNew = np.append(s_phiArray, s_phiArrayNew)
+        
+        
     
 calcAnaliticalSolution(r=r, rEnds=r_, rCenter=r_i, rExterior=r_a, windings=10, materialNys=))

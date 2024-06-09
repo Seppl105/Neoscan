@@ -105,6 +105,17 @@ def calcTanhValue(r, coeff, materialValues):
         E_r = E_r[0]
     return E_r
 
+def calcTanhDerivativeValue(r, coeff):
+    '''Calculate the derivative for any r (skalar or np.array) according to d[ A*tanh(B*r+C)+D ]/dr = A * B * (1 - tanh^2(B*r+C)) '''
+    dE_r = np.zeros_like(r)
+    dE_r = np.sum(coeff[0] * coeff[1] *   ( 1- (np.tanh(np.outer(r, coeff[1]) + coeff[2]))**2 )   , axis=1)
+    #dE_r = np.sum(coeff[0] * coeff[1] / np.cosh(np.outer(r, coeff[1]) + coeff[2]) + coeff[3])**2 )   , axis=1))
+    # for i in range(len(coeff[0])):
+    #     E_r += coeff[0][i] * np.tanh(coeff[1][i] * r + coeff[2][i]) + coeff[3][i]
+    if len(dE_r) == 1:
+        dE_r = dE_r[0]
+    return dE_r
+
 
 # ### So wird die Funktion bisher aufgerufen
 
