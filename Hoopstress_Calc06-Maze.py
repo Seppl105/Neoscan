@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as smp
+import math as m
 from scipy.integrate import odeint
 from scipy.integrate import solve_bvp
 from functions.Hoopstress_Calc02Copy import calcStresses
@@ -13,11 +14,14 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 # Einheiten in SI Basiseinheiten mit mSkalierung kann die Längeneinheit skaliert werden
 # 
 
+######## Notizen
+# wichtiger
+
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
 windingDivisor = 60        # Es wird für 600/windingDivisor Windungen gerechnet
-numberOfValues = int(100000 / windingDivisor) # Anzahl der Werte des r Vektors
-solbvpMaxNodes = numberOfValues
+numberOfValues = int(300000 / windingDivisor) # Anzahl der Werte des r Vektors
+solbvpMaxNodes = numberOfValues * 3
 
 #   Subplots
 anzahlRowPlots = 2
@@ -151,11 +155,15 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
     #print("test2")
     return([u_r, e_r])
 
+
 def plotError(r, sol, solName, referenceSol, referenceSolName):
     error = sol - referenceSol
+    print("max error: ", error.max())
+    exponent = abs(m.floor(m.log10(abs(error.max()))))
+    print("exponent: ", exponent)
     relativeError = np.sum(error) / len(error)
-    error = error / 10**(int(error.max() / 10))
-    label = f"difference * 10^{int(error.max() / 10)} between {solName} and {referenceSolName}"
+    error = error / 10** exponent
+    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Error: {relativeError})"
     plt.plot(r, error, label=label)
     
     
@@ -351,12 +359,22 @@ plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/(m E{int(np.log10(mSkalierung))})^3 für dny in 1/m E{int(np.log10(mSkalierung))}")
 plt.legend()
 
-plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
+ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
 plotError(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
 plotError(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
 plotError(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
-plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
-plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
+plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
+plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
+# Shrink current axis's height by 10% on the bottom
+box = ax4.get_position()
+ax4.set_position([box.x0, box.y0 + box.height * 0.3,
+                 box.width, box.height * 0.7])
+
+# Put a legend below current axis
+ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=1)
+
+
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
 #u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, fourierFunctionE_f(r), fourierFunctionNy_f(r))[0]

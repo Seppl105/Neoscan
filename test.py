@@ -134,3 +134,12 @@ if a.any():
     print("True")
 else:
     print("false")
+
+from math import log10, floor # floor returns the greatest integer
+
+number = 3.2345 * 10**26
+print(number/ 10**(abs(floor(log10(abs(number))))))
+
+#print(number / 10**(int(number * 10**26 / 10)))
+t = [3, 3, 3, 3, 3]
+print([0] * (len(t) - 1))
