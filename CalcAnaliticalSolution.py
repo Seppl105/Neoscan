@@ -22,66 +22,66 @@ solbvpMaxNodes = numberOfValues * 3
 anzahlRowPlots = 2
 anzahlColumnPlots = 4
 
-#   Spannungsrandbedingungen
+# #   Spannungsrandbedingungen
 
-#s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
-s_ra = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
-s_ri = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
-s_z0 = 0
-s_z = s_z0
-ds_z = 0
-#s_r0 = 0
-#s_phi0 = 4.3264372825278825 * 10**8 * mSkalierung**(-1)     # N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
-
-
-#   Materialparameter
-
-t = 0.36 * 10**(-3) * mSkalierung     # [m] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
-t_con = 0.12 * 10**(-3) * mSkalierung # [m] Dicke des Bandleiters
-t_cow = 0.23 * 10**(-3) * mSkalierung # [m] Dicke des Cowindings
-t_ins = 0.01 * 10**(-3) * mSkalierung # [m] Dicke der Isolation
-materialWidths = [t_con, t_cow, t_ins]
-
-E_con = 280 * 10**9 * mSkalierung**(-1) # E-Modul Conductor
-E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
-E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
-materialEs = [500, 450, 400]
-
-ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
-ny_cow = 0.3 # Possion's Ratio Cowinding
-ny_ins = 0.4 # Possion's Ratio Insulation
-materialNys = [0.35, 0.3, 0.4]
-
-#   Konstanten des Versuchsaufbau
-
-r_i = 0.430 * mSkalierung               # [m] innerer radius
-r_a = 0.646 * mSkalierung               # [m] äußerer radius
-r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))
-
-r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
-
-j = 114.2 * 10**6 * mSkalierung**(-2)       # [A/m^2] Stromdichte
-b_za = -2.5                             # [T] magnetische Flussdichte außen
-b_zi = 14                               # [T] magnetische Flussdichte innen
-b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
-
-# Funktion zur Berechnung des B-Felds an der Stelle r
-def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
-    return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
-
-coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
-E = calcTanhValue(r, coefficientsE, materialEs)
-print(E)
-#E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
-#E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
-#E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
+# #s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
+# s_ra = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
+# s_ri = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
+# s_z0 = 0
+# s_z = s_z0
+# ds_z = 0
+# #s_r0 = 0
+# #s_phi0 = 4.3264372825278825 * 10**8 * mSkalierung**(-1)     # N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 
 
-coefficientsNy = calcMaterialTanhCoefficients(r_i, r_a, t, materialWidths, materialNys, slope=1000, scale=720)
-ny = calcTanhValue(r, coefficientsNy, materialNys)
-#ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
-#ny[len(E) - int(0.2* numberOfValues):] = 0.25
-#ny[:int(0.2* numberOfValues)] = 0.25
+# #   Materialparameter
+
+# t = 0.36 * 10**(-3) * mSkalierung     # [m] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
+# t_con = 0.12 * 10**(-3) * mSkalierung # [m] Dicke des Bandleiters
+# t_cow = 0.23 * 10**(-3) * mSkalierung # [m] Dicke des Cowindings
+# t_ins = 0.01 * 10**(-3) * mSkalierung # [m] Dicke der Isolation
+# materialWidths = [t_con, t_cow, t_ins]
+
+# E_con = 280 * 10**9 * mSkalierung**(-1) # E-Modul Conductor
+# E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
+# E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
+# materialEs = [500, 450, 400]
+
+# ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
+# ny_cow = 0.3 # Possion's Ratio Cowinding
+# ny_ins = 0.4 # Possion's Ratio Insulation
+# materialNys = [0.35, 0.3, 0.4]
+
+# #   Konstanten des Versuchsaufbau
+
+# r_i = 0.430 * mSkalierung               # [m] innerer radius
+# r_a = 0.646 * mSkalierung               # [m] äußerer radius
+# r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))
+
+# r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
+
+# j = 114.2 * 10**6 * mSkalierung**(-2)       # [A/m^2] Stromdichte
+# b_za = -2.5                             # [T] magnetische Flussdichte außen
+# b_zi = 14                               # [T] magnetische Flussdichte innen
+# b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
+
+# # Funktion zur Berechnung des B-Felds an der Stelle r
+# def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
+#     return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
+
+# coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
+# E = calcTanhValue(r, coefficientsE, materialEs)
+# print(E)
+# #E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
+# #E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
+# #E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
+
+
+# coefficientsNy = calcMaterialTanhCoefficients(r_i, r_a, t, materialWidths, materialNys, slope=1000, scale=720)
+# ny = calcTanhValue(r, coefficientsNy, materialNys)
+# #ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
+# #ny[len(E) - int(0.2* numberOfValues):] = 0.25
+# #ny[:int(0.2* numberOfValues)] = 0.25
 
 
 def calcIntegral(n, r, r_Start, r_Exterior, r_Center, j, b_za, b_zi, b_0):
@@ -89,8 +89,15 @@ def calcIntegral(n, r, r_Start, r_Exterior, r_Center, j, b_za, b_zi, b_0):
                  +  b_0                     * (1/  (n+1) ) * (r**(n+1) - r_Start**(n+1)))
     
 
-def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior, windings, materialNys):
-     # Equation (14) with sigma_z=const.
+def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior, s_zBegin, windings, nyRespectR, j, b_za, b_zi, b_0):
+    # rDomains = [ [r_1i] , [r_2i] , ...., [r_ni]] with np.arrays
+    ### Berechne s_z
+    s_z = s_zBegin  # from eq (4) ################################################################
+    print(isinstance(rDomains))
+    rEnds = [item[0] for item in rDomains]
+    rEnds.pop(0)
+    rEnds.append(r[-1]) 
+    # Equation (14) with sigma_z=const.
     cB = lambda r, r1 : 1/2 * (1 - r1**2/r**2)
     cA = lambda r, r1 : 1/2 * (1 + r1**2/r**2)
     c = lambda r, r1, ny : - 1/2 * (1+ny) * calcIntegral(0, r, r1, rExterior, rCenter, j, b_za, b_zi, b_0) - 1/r**2 * (1 - (1+ny) / 2) * calcIntegral(0, r, r1, rExterior, rCenter, j, b_za, b_zi, b_0)
@@ -101,10 +108,10 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
     for i, rJump in enumerate(rEnds):
         if i == 0:
             riStart = 0
-            constant.append(cA(rJump, riStart) * s_rCenter + c(rJump, riStart, ny( (riStart+rJump)/2 )) ) 
+            constant.append(cA(rJump, riStart) * s_rCenter + c(rJump, riStart, nyRespectR( (riStart+rJump)/2 )) ) 
         else:
             riStart = rJump - rEnds[i - 1]
-            constant.append(c(rJump, riStart, ny( (riStart+rJump)/2 )))
+            constant.append(c(rJump, riStart, nyRespectR( (riStart+rJump)/2 )))
         row.extend([i, i, i])
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +2])
@@ -124,10 +131,10 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
     for i, rJump in enumerate(rEnds):
         if i == 0:
             riStart = 0
-            constant.append(-s_rCenter - (1+ny( (riStart+rJump)/2 )) * calcIntegral(0, r, riStart, rExterior, rCenter, j, b_za, b_zi, b_0)) 
+            constant.append(-s_rCenter - (1+nyRespectR( (riStart+rJump)/2 )) * calcIntegral(0, rEnds[i], riStart, rExterior, rCenter, j, b_za, b_zi, b_0)) 
         else:
             riStart = rJump - rEnds[i - 1]
-            constant.append(- (1+ny( (riStart+rJump)/2 )) * calcIntegral(0, r, riStart, rExterior, rCenter, j, b_za, b_zi, b_0))
+            constant.append(- (1+nyRespectR( (riStart+rJump)/2 )) * calcIntegral(0, rEnds[0], riStart, rExterior, rCenter, j, b_za, b_zi, b_0))
         row.extend([len + i, len + i, len + i, len + i])
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +2, icol +3])
@@ -151,7 +158,7 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
             row.extend([len + i, len + i, len + i])
             icol = 3*i + 1
             col.extend([icol, icol +1, icol +2])
-            data.extend([1, -ny( (rJump-rEnds[i])/2 ) + ny( (rEnds[i+1]-rJump)/2 ), -1])###################################################
+            data.extend([1, -nyRespectR( (rJump-rEnds[i])/2 ) + nyRespectR( (rEnds[i+1]-rJump)/2 ), -1])###################################################
     constant.extend([0] * (len(rEnds) - 1))
     
     # calculate the sparse matrix
@@ -167,38 +174,38 @@ def calcAnaliticalSolution(r, rEnds, rCenter, rExterior, s_rCenter, s_rExterior,
     
         
     ###Berechnen der Spannungen im innersten Torus
-    r = np.linspace(rCenter, rEnds[0], rValuesPerMaterial)
-    s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/r**2) 
-                - ((1 + ny[0]) / 2) * calcIntegral(0, r, rExterior, rCenter, j, b_za, b_zi, b_0)
-                -  (1/r**2) * (1 - (1 + ny[0])/2 ) * calcIntegral(2, r, rExterior, rCenter, j, b_za, b_zi, b_0)
-                +  (s_rCenter  *  (1/2)  *  (1 + (rCenter**2/r**2))))
+    #r = np.linspace(rCenter, rEnds[0], rValuesPerMaterial)
+    s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/rDomains[0]**2) 
+                - ((1 + nyRespectR[0]) / 2) * calcIntegral(0, rDomains[0], rExterior, rCenter, j, b_za, b_zi, b_0)
+                -  (1/rDomains[0]**2) * (1 - (1 + nyRespectR[0])/2 ) * calcIntegral(2, rDomains[0], rExterior, rCenter, j, b_za, b_zi, b_0)
+                +  (s_rCenter  *  (1/2)  *  (1 + (rCenter**2/rDomains[0]**2))))
     #print("s_rArray: ", s_rArray[0:5])
     
     
     ### Berechne s_phi
-    s_phiArray = ( (result[0] - ny[0] * s_z0)  
-                 +  ny[0] * s_z  
-                 -  (ny[0] + 1) * calcIntegral(0, r, rExterior, rCenter, j, b_za, b_zi, b_0)
+    s_phiArray = ( (result[0] - nyRespectR[0] * s_zBegin)  
+                 +  nyRespectR[0] * s_z  
+                 -  (nyRespectR[0] + 1) * calcIntegral(0, rDomains[0], rExterior, rCenter, j, b_za, b_zi, b_0)
                  + s_rCenter
                  - s_rArray )
     
     for winding in range(windings-1):
-        rNew = np.linspace()######################################################
+        #rNew = np.linspace()######################################################
         winding += 1
-        s_rArrayNew = (  (1/2) * result[3*winding] * (1 - rEnds[winding - 1]**2/rNew**2) 
-                    - ((1 + ny( (rEnds[winding]-rEnds[winding-1]/2) )) / 2) * calcIntegral(0, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
-                    -  (1/rNew**2) * (1 - (1 + ny( (rEnds[winding]-rEnds[winding-1]/2) ))/2 ) * calcIntegral(2, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
+        s_rArrayNew = (  (1/2) * result[3*winding] * (1 - rEnds[winding - 1]**2/rDomains[winding]**2) 
+                    - ((1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2) )) / 2) * calcIntegral(0, rDomains[winding], rExterior, rCenter, j, b_za, b_zi, b_0)
+                    -  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2) ))/2 ) * calcIntegral(2, rDomains[winding], rExterior, rCenter, j, b_za, b_zi, b_0)
                     +  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2))))
         
-        s_phiArrayNew = ( (result[3*winding] - ny[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_z0)  
-                        +  ny[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_z  
-                        -  (ny[ (rEnds[winding]-rEnds[winding-1]/2) ] + 1) * calcIntegral(0, rNew, rExterior, rCenter, j, b_za, b_zi, b_0)
+        s_phiArrayNew = ( (result[3*winding] - nyRespectR[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_zBegin)  
+                        +  nyRespectR[ (rEnds[winding]-rEnds[winding-1]/2) ] * s_z  
+                        -  (nyRespectR[ (rEnds[winding]-rEnds[winding-1]/2) ] + 1) * calcIntegral(0, rDomains[winding], rExterior, rCenter, j, b_za, b_zi, b_0)
                         + result[3*winding - 1]
                         - s_rArrayNew )
         
         s_rArray = np.append(s_rArray, s_rArrayNew)
-        s_phiArrayNew = np.append(s_phiArray, s_phiArrayNew)
+        s_phiArray = np.append(s_phiArray, s_phiArrayNew)
         
         
     
-calcAnaliticalSolution(r=r, rEnds=r_, rCenter=r_i, rExterior=r_a, windings=10, materialNys=))
+calcAnaliticalSolution(r=r, rEnds=r_, rCenter=r_i, rExterior=r_a, windings=10, materialNys=)
