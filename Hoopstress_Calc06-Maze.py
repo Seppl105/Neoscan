@@ -20,7 +20,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
 windingDivisor = 60        # Es wird für 600/windingDivisor Windungen gerechnet
-numberOfValues = int(300000 / windingDivisor) # Anzahl der Werte des r Vektors
+numberOfValues = int(1000000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 
 #   Subplots
@@ -50,12 +50,12 @@ materialWidths = [t_con, t_cow, t_ins]
 E_con = 280 * 10**9 * mSkalierung**(-1) # E-Modul Conductor
 E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
 E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
-materialEs = [500, 450, 400]
+materialEs = [500 *10**9 *mSkalierung**(-1), 450 *10**9 * mSkalierung**(-1), 400 *10**9 * mSkalierung**(-1)]
 
 ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
 ny_cow = 0.3 # Possion's Ratio Cowinding
 ny_ins = 0.4 # Possion's Ratio Insulation
-materialNys = [0.35, 0.3, 0.4]
+materialNys = [0.35, 0.33, 0.4]
 
 #   Konstanten des Versuchsaufbau
 
@@ -76,7 +76,7 @@ def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 
 coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
 E = calcTanhValue(r, coefficientsE, materialEs)
-print(E)
+print("E: ", E)
 #E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
 #E[:int(0.2* numberOfValues)] = 150 * 10**9 * mSkalierung**(-1)
 #E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
@@ -156,15 +156,15 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
     return([u_r, e_r])
 
 
-def plotError(r, sol, solName, referenceSol, referenceSolName):
-    error = sol - referenceSol
-    print("max error: ", error.max())
-    exponent = abs(m.floor(m.log10(abs(error.max()))))
+def plotDeviaton(r, sol, solName, referenceSol, referenceSolName):
+    deviaton = sol - referenceSol
+    print("max deviaton: ", deviaton.max())
+    exponent = abs(m.floor(m.log10(abs(deviaton.max()))))
     print("exponent: ", exponent)
-    relativeError = np.sum(error) / len(error)
-    error = error / 10** exponent
-    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Error: {relativeError})"
-    plt.plot(r, error, label=label)
+    averagedDeviaton = np.sum(deviaton) / len(deviaton)
+    deviaton = deviaton / 10** exponent
+    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Deviaton: {averagedDeviaton})"
+    plt.plot(r, deviaton, label=label)
     
     
 
@@ -263,9 +263,9 @@ u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)
 #                                                        calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**(2))[1], 
 #                                100 * 10**9, 0.3)[0] #########################################################################################################
 #                 * mSkalierung**1)      # Berechnung von calc Displacement in SI Basiseinheiten und dann Umrechnung von m in mm
-u_rCaldwell = 1000**(-1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-1) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
-                                                                   mSkalierung**(-1) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
-                                E[0], ny[0])[0]
+u_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+                                calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsE, materialValues=materialEs * mSkalierung) * mSkalierung, calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsNy, materialValues=materialNys))[0]
 
 u_rDerivative = calcDisplacement(r, s_rSolBvpDerivativeTanh, s_phiSolBvpDerivativeTanh, E, ny)[0]
 ##### Plots
@@ -359,20 +359,20 @@ plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/(m E{int(np.log10(mSkalierung))})^3 für dny in 1/m E{int(np.log10(mSkalierung))}")
 plt.legend()
 
-ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
-plotError(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
-plotError(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
-plotError(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
-plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
-plotError(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
-# Shrink current axis's height by 10% on the bottom
-box = ax4.get_position()
-ax4.set_position([box.x0, box.y0 + box.height * 0.3,
-                 box.width, box.height * 0.7])
+# ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
+# plotDeviaton(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
+# plotDeviaton(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
+# plotDeviaton(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
+# plotDeviaton(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
+# plotDeviaton(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
+# # Shrink current axis's height by 10% on the bottom
+# box = ax4.get_position()
+# ax4.set_position([box.x0, box.y0 + box.height * 0.3,
+#                  box.width, box.height * 0.7])
 
-# Put a legend below current axis
-ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=1)
+# # Put a legend below current axis
+# ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+#           fancybox=True, shadow=True, ncol=1)
 
 
 
