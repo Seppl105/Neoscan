@@ -117,6 +117,7 @@ def calcTanhDerivativeValue(r, coeff):
     return dE_r
 
 
+
 # ### So wird die Funktion bisher aufgerufen
 
 # r_i = 430 # [mm] innerer Radius

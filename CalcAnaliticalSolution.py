@@ -16,7 +16,7 @@ from functions.calcMaterialFunction import calcTanhDerivativeValue
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
-mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
+mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
 windingDivisor = 60        # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(300000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
@@ -50,7 +50,7 @@ E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
 E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
 materialEs = [500, 450, 400]
 
-ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
+ny_con = 0.35 #* 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
 ny_cow = 0.3 # Possion's Ratio Cowinding
 ny_ins = 0.4 # Possion's Ratio Insulation
 materialNys = [0.35, 0.3, 0.4]
@@ -101,16 +101,17 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     print(type(rDomains))
     rEnds = [item[0] for item in rDomains]
     rEnds.pop(0)
-    rEnds.append(rExterior) 
-    print(rEnds)
+    rEnds.append(rExterior)
+    #print(rEnds)
     # Equation (14) with sigma_z=const.
     cB = lambda r, r1 : 1/2 * (1 - r1**2/r**2)
     cA = lambda r, r1 : 1/2 * (1 + r1**2/r**2)
-    c = lambda r, r1, ny : - 1/2 * (1+ny) * calcIntegral(0, r, r1, rExterior, rCenter, j, b_za, b_zi, b_0) - 1/r**2 * (1 - (1+ny) / 2) * calcIntegral(0, r, r1, rExterior, rCenter, j, b_za, b_zi, b_0)
+    c = lambda r, r1, ny : - 1/2 * (1+ny) * calcIntegral(n=0, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0) - 1/r**2 * (1 - (1+ny)/2 ) * calcIntegral(n=2, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
     row = []
     col = []  # column
     data = []
     constant = []
+    nyTestDummy = []
     for i, rJump in enumerate(rEnds):
         if i == 0:
             riStart = rCenter
@@ -122,6 +123,10 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +3])
         data.extend([-cA(rJump, riStart), -cB(rJump, riStart), 1])
+        #print(nyRespectR((riStart+rJump)/2 , rArray, nyArray))
+        nyTestDummy.append(nyRespectR((riStart+rJump)/2 , rArray, nyArray))
+    print("first part of nyTestDummy ", nyTestDummy[:20])
+    print("last part of nyTestDummy ", nyTestDummy[-20:])
     # remove first and last element because they are know (sigma_r(r_center) and sigma_r(r_exterior))
     row.pop(0)
     col.pop(0)
@@ -134,18 +139,25 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     
     # Equation (13) with sigma_z=const.
     length = len(data)
+    nyTestDummy2 = []
     for i, rJump in enumerate(rEnds):
         if i == 0:
             riStart = rCenter                                                                               
-            constant.append(-s_rCenter - (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(0, rEnds[i], riStart, rExterior, rCenter, j, b_za, b_zi, b_0)) 
+            constant.append(s_rCenter - (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)) 
         else:
-            riStart = rJump - rEnds[i - 1]
-            constant.append(- (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(0, rEnds[0], riStart, rExterior, rCenter, j, b_za, b_zi, b_0))
+            riStart = rEnds[i - 1]
+            constant.append(- (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0))
         row.extend([windings*len(materialWidths) + i,  windings*len(materialWidths) + i,  windings*len(materialWidths) + i,  windings*len(materialWidths) + i])
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +2, icol +3])
         data.extend([-1, -1, 1, 1])
+        #print(nyRespectR((riStart+rJump)/2 , rArray, nyArray))
+        nyTestDummy2.append(nyRespectR((riStart+rJump)/2 , rArray, nyArray))
+        if nyTestDummy[i] != nyRespectR((riStart+rJump)/2 , rArray, nyArray):
+            print("Error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     # remove first and last element of the newly added values because they are know (sigma_r(r_center) and sigma_r(r_exterior))
+    print("first part of nyTestDummy2", nyTestDummy2[:20])
+    print("last part of nyTestDummy2", nyTestDummy2[-20:])
     row.pop(length)    # not (length - 1) because the first element added after length was assigned shall be poped ##########################################
     col.pop(length)
     data.pop(length)
@@ -157,9 +169,9 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     
     # u(r_i-1End) = u_(r_iStart) with sigma_z=const.
     length = len(data)
-    rEndsWithoutLastEnd = rEnds[:] # [:] needed to copy the list and not assigning the reference
+    rEndsWithoutLastEnd = rEnds[:] # [:] needed to copy the list and not assigning a reference to the original list
     rEndsWithoutLastEnd.pop()
-    print(len(rEnds), len(rEndsWithoutLastEnd))
+    print("len(rEnds) len(rEndsWithoutLastEnd)", len(rEnds), len(rEndsWithoutLastEnd))
     for i, rJump in enumerate(rEndsWithoutLastEnd):       # iterating over the material transitions ##########################
         if i == 0:
             riStart = rCenter
@@ -169,7 +181,11 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
         row.extend([2 * windings*len(materialWidths) + i, 2 * windings*len(materialWidths) + i, 2 * windings*len(materialWidths) + i])
         icol = 3*i + 1
         col.extend([icol, icol +1, icol +2])
-        data.extend([1, -nyRespectR( (rJump-riStart)/2 , rArray, nyArray) + nyRespectR( (rEnds[i+1]-rJump)/2 , rArray, nyArray), -1])###################################################
+        data.extend([1, -nyRespectR( (rJump+riStart)/2 , rArray, nyArray) + nyRespectR( (rEnds[i+1]+rJump)/2 , rArray, nyArray), -1])###################################################
+        #print(nyRespectR((riStart+rJump)/2 , rArray, nyArray))
+        if nyTestDummy[i] != nyRespectR((riStart+rJump)/2 , rArray, nyArray): #nur zum prüfen von ny
+            print("Error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    
     constant.extend([0] * (len(rEnds) - 1))
     
     # for i, rJump in enumerate(rEnds):
@@ -184,7 +200,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     
     # calculate the sparse matrix
     A = csr_matrix((data, (row, col)), shape=(3*windings*len(materialWidths) -1, 3*windings*len(materialWidths) -1), dtype=float)
-    print(A.toarray())
+    #print(A.toarray())
     print(A.shape)
     print(type(A))
     #print(constant)
@@ -202,62 +218,69 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     nonzero_values = A.data
     #print(len(data), len(nonzero_values))
     
-    #plt.scatter(col, row, c=nonzero_values, cmap="YlGnBu",)
+    plt.scatter(col, row, c=nonzero_values, cmap="YlGnBu",)
     plt.grid(True)
     plt.colorbar()
     plt.ylabel("Zeile")
     plt.gca().invert_yaxis()
     plt.xlabel("Spalte")
-    #plt.show()
+    plt.show()
     
     
     Ainv = inv(A)
     #Ainv = spsolve(A, identity) # identity is from scipy.sparse
     result = Ainv.dot(constant)
-    
+    print(result)
         
     ###Berechnen der Spannungen im innersten Torus
     #r = np.linspace(rCenter, rEnds[0], rValuesPerMaterial)
-    s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/rDomains[0]**2)                                   
-                - ((1 + nyRespectR(rCenter, rDomains[0], nyArray[0:len(rDomains[0])])) / 2) * calcIntegral(0, rDomains[0], rDomains[0][0], rExterior, rCenter, j, b_za, b_zi, b_0)
-                -  (1/rDomains[0]**2) * (1 - (1 + nyRespectR(rCenter, rDomains[0], nyArray[0:len(rDomains[0])]))/2 ) * calcIntegral(2, rDomains[0], rDomains[0][0], rExterior, rCenter, j, b_za, b_zi, b_0)
+    s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/rDomains[0]**2)                               
+                - ((1 + nyRespectR(rCenter, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[0], r_Start=rDomains[0][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                -  (1/rDomains[0]**2) * (1 - (1 + nyRespectR(rCenter, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[0], r_Start=rDomains[0][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
                 +  (s_rCenter  *  (1/2)  *  (1 + (rCenter**2/rDomains[0]**2))))
     #print("s_rArray: ", s_rArray[0:5])
     
     
     ### Berechne s_phi
-    s_phiArray = ( (result[0] - nyRespectR(rCenter, rDomains[0], nyArray[0:len(rDomains[0])]) * s_zBegin)  
-                 +  nyRespectR(rCenter, rDomains[0], nyArray[0:len(rDomains[0])]) * s_z  
-                 -  (nyRespectR(rCenter, rDomains[0], nyArray[0:len(rDomains[0])]) + 1) * calcIntegral(0, rDomains[0], rDomains[0][0], rExterior, rCenter, j, b_za, b_zi, b_0)
+    s_phiArray = ( (result[0] - nyRespectR(rCenter, rArray, nyArray) * s_zBegin)  
+                 +  nyRespectR(rCenter, rArray, nyArray) * s_z  
+                 -  (1 + nyRespectR(rCenter, rArray, nyArray)) * calcIntegral(n=0, r=rDomains[0], r_Start=rDomains[0][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
                  + s_rCenter
                  - s_rArray )
     
     for winding in range(len(rDomains) - 1):
         #rNew = np.linspace()######################################################
         winding += 1
-        print(result[3*winding], rEnds[winding - 1], len(rDomains[winding]))
-        print(len(- ((1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray)) / 2) * calcIntegral(0, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
-        print(len(-  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray))/2 ) * calcIntegral(2, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
-        print(len(+  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2)))))
+        # print(result[3*winding], rEnds[winding - 1], len(rDomains[winding]))
+        # print(len(- ((1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray)) / 2) * calcIntegral(0, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
+        # print(len(-  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray))/2 ) * calcIntegral(2, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
+        # print(len(+  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2)))))
+        # print(+  (result[3*winding - 1]  *  (1/2)  ))
+        # print((1 + (rEnds[winding - 1])))
+        # print(len(r**2))
         
         s_rArrayNew = (  (1/2) * result[3*winding] * (1 - rEnds[winding - 1]**2/rDomains[winding]**2) 
-                    - ((1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray)) / 2) * calcIntegral(0, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)
-                    -  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray))/2 ) * calcIntegral(2, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)
-                    +  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2))))
+                    - ((1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    -  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    +  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/rDomains[winding]**2))))
         
-        s_phiArrayNew = ( (result[3*winding] - nyRespectR( (rEnds[winding]-rEnds[winding-1]/2) , rArray, nyArray) * s_zBegin)  
-                        +  nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray) * s_z  
-                        -  (nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray) + 1) * calcIntegral(0, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)
+        s_phiArrayNew = ( (result[3*winding] - nyRespectR( (rEnds[winding]+rEnds[winding-1])/2 , rArray, nyArray) * s_zBegin)  
+                        +  nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_z  
+                        -  (1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) * calcIntegral(n=0, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
                         + result[3*winding - 1]
                         - s_rArrayNew )
         
         s_rArray = np.append(s_rArray, s_rArrayNew)
         s_phiArray = np.append(s_phiArray, s_phiArrayNew)
+        #print(winding)
     
+    
+    #print(nyRespectR(r_i, rArray, nyArray))
+    #print(r_i)
     return s_rArray, s_phiArray
-        
+    
 def calcDomains(rCenter, materialWidths, numberOfWindings, numberOfValuesR):
-    '''Calculates all radii (results) at which the jumps occur.'''
+    '''Calculates an np.array containing arrays with discrete values coresponding to the material domains; only the last domain contains the end value'''
     thisSpot = rCenter
     results = []
     for i in range(numberOfWindings):
@@ -281,5 +304,10 @@ r = np.linspace(r_i, r_a, 500000)
 rDom = calcDomains(r_i, materialWidths, 600, len(r))
 Ny = calcNyWithDomains(rDom, materialNys)
 s_r, s_phi = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rExterior=0, s_zBegin=0, windings=600, nyArray=Ny, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
-
-plt.plot(r, s_r)
+plt.subplot(2,1,1)
+plt.grid(True)
+plt.plot(rDom.flatten(), s_r)
+plt.subplot(2,1,2)
+plt.grid(True)
+plt.plot(rDom.flatten(), s_phi)
+plt.show()
