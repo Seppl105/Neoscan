@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime # Nur für die Bennenung der Grafiken
+import math as m
 #from delete.materials import calcMaterialTanhCoefficients
 #from delete.materials import calcMaterialValue
 
@@ -143,3 +144,5 @@ print(number/ 10**(abs(floor(log10(abs(number))))))
 #print(number / 10**(int(number * 10**26 / 10)))
 t = [3, 3, 3, 3, 3]
 print([0] * (len(t) - 1))
+
+print(m.log10(int(0.000000000000000000000000000000000000000000000001)))

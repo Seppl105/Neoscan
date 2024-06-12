@@ -156,15 +156,16 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
     return([u_r, e_r])
 
 
-def plotDeviaton(r, sol, solName, referenceSol, referenceSolName):
-    deviaton = sol - referenceSol
-    print("max deviaton: ", deviaton.max())
-    exponent = abs(m.floor(m.log10(abs(deviaton.max()))))
+def plotDeviation(r, sol, solName, referenceSol, referenceSolName):
+    deviation = sol - referenceSol
+    print("max deviation: ", deviation.max())
+    print(m.log10(abs(deviation.max())))
+    exponent = m.floor(m.log10(abs(max(deviation.min(), deviation.max(), key=abs))))
     print("exponent: ", exponent)
-    averagedDeviaton = np.sum(deviaton) / len(deviaton)
-    deviaton = deviaton / 10** exponent
-    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Deviaton: {averagedDeviaton})"
-    plt.plot(r, deviaton, label=label)
+    averagedDeviation = np.sum(deviation) / len(deviation)
+    deviation = deviation / 10** exponent
+    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Deviation: {averagedDeviation})"
+    plt.plot(r, deviation, label=label)
     
     
 
@@ -342,8 +343,10 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
 #plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
 #plt.plot(r, dfourierFunctionNy_f(r) * 10**6, label="dFourierNy * 10^6")
 #plt.plot(r, dFormulaFourierFunctionE_f(r), label="dFormulaFourierE")
-plt.plot(r, dDerivativeTanhE, label="dDerivativeTanhE")
-plt.plot(r, dDerivativeTanhNy * 10**3, label="dDerivativeTanhNy *10^3")
+exponent = m.floor(m.log10(abs(dDerivativeTanhE.max())))
+plt.plot(r, dDerivativeTanhE / 10**exponent, label=f"dDerivativeTanhE *10^{exponent}")
+exponent = m.floor(m.log10(abs(dDerivativeTanhNy.max())))
+plt.plot(r, dDerivativeTanhNy / 10**exponent, label=f"dDerivativeTanhNy *10^{exponent}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/mm^3 für dny in 1/m E{int(np.log10(mSkalierung))} E2")
 #plt.plot(r, radialForce_f(r), label="R")
@@ -352,27 +355,31 @@ plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
-plt.plot(r, dGradientE * 10**3, label="dGradientE * 10^3")
-plt.plot(r, dGradientNy * 10**6, label="dGradientNy * 10^6")
-plt.plot(r, calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j * 10, label="R * 10")
+exponent = m.floor(m.log10(abs(dGradientE.max())))
+plt.plot(r, dGradientE / 10**exponent, label=f"dGradientE *10^{exponent}")
+exponent = m.floor(m.log10(abs(dGradientNy.max())))
+plt.plot(r, dGradientNy / 10**exponent, label=f"dGradientNy *10^{exponent}")
+RPlot = calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j
+exponent = abs(m.floor(m.log10(abs(RPlot.max()))))
+plt.plot(r, calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j / 10**exponent, label=f"R * 10^{exponent}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/(m E{int(np.log10(mSkalierung))})^3 für dny in 1/m E{int(np.log10(mSkalierung))}")
 plt.legend()
 
-# ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
-# plotDeviaton(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
-# plotDeviaton(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
-# plotDeviaton(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
-# plotDeviaton(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
-# plotDeviaton(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
-# # Shrink current axis's height by 10% on the bottom
-# box = ax4.get_position()
-# ax4.set_position([box.x0, box.y0 + box.height * 0.3,
-#                  box.width, box.height * 0.7])
+ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
+plotDeviation(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
+plotDeviation(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
+plotDeviation(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
+plotDeviation(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
+plotDeviation(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
+# Shrink current axis's height by 10% on the bottom
+box = ax4.get_position()
+ax4.set_position([box.x0, box.y0 + box.height * 0.3,
+                 box.width, box.height * 0.7])
 
-# # Put a legend below current axis
-# ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-#           fancybox=True, shadow=True, ncol=1)
+# Put a legend below current axis
+ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True, ncol=1)
 
 
 
@@ -383,7 +390,7 @@ plt.plot(r, u_rGradient, label="u_r berechnet über BVP mit Differenzenquotient"
 #plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
 plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
 #plt.plot(r, u_rCaldwell)
-plt.plot(r, u_rDerivative, label="u_r berechnet über BVP mit analytischer Ableitung")
+plt.plot(r, u_rDerivative, label=f"u_r berechnet über BVP mit analytischer Ableitung\nu_i={round(u_rDerivative[0], 6)}; u_a={round(u_rDerivative[-1], 6)}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"u_r in m E{int(np.log10(mSkalierung))}")
 plt.legend()
