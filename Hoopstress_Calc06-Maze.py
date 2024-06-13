@@ -19,9 +19,10 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 60        # Es wird für 600/windingDivisor Windungen gerechnet
-numberOfValues = int(1000000 / windingDivisor) # Anzahl der Werte des r Vektors
+windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+numberOfValues = int(200000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
+solbvpMaxNodesGradient = 5000
 
 #   Subplots
 anzahlRowPlots = 2
@@ -157,15 +158,19 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
 
 
 def plotDeviation(r, sol, solName, referenceSol, referenceSolName):
-    deviation = sol - referenceSol
-    print("max deviation: ", deviation.max())
-    print(m.log10(abs(deviation.max())))
-    exponent = m.floor(m.log10(abs(max(deviation.min(), deviation.max(), key=abs))))
-    print("exponent: ", exponent)
-    averagedDeviation = np.sum(deviation) / len(deviation)
-    deviation = deviation / 10** exponent
-    label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Deviation: {averagedDeviation})"
-    plt.plot(r, deviation, label=label)
+    try:
+        deviation = sol - referenceSol
+        print("max deviation: ", deviation.max())
+        print(m.log10(abs(max(deviation.min(), deviation.max(), key=abs))))
+        exponent = m.floor(m.log10(abs(max(deviation.min(), deviation.max(), key=abs))))
+        print("exponent: ", exponent)
+        averagedDeviation = np.sum(deviation) / len(deviation)
+        deviation = deviation / 10** exponent
+        label = f"difference (10^{exponent}) between {solName} and {referenceSolName}\n(relative Deviation: {averagedDeviation})"
+        plt.plot(r, deviation, label=label)
+    except Exception as e:
+        print(e)
+        print(f"Deviation Error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n max(deviation.min(), deviation.max(), key=abs): {max(deviation.min(), deviation.max(), key=abs)}")
     
     
 
@@ -211,7 +216,7 @@ dGradientNy = np.gradient(ny)
 #print(np.shape(dGradientNy))
 #print(np.shape(ny))
 #print(np.shape(r), "r")
-solBvpGradient = solve_bvp(funcGradient, bc, r, yInitialGuess, max_nodes=solbvpMaxNodes)
+solBvpGradient = solve_bvp(funcGradient, bc, r, yInitialGuess, max_nodes=solbvpMaxNodesGradient)
 print("solbvp results:\n solStatus (0 wenn alles geklappt hat): ", solBvpGradient.status, "\nsolmessage: ", solBvpGradient.message)
 
 s_rSolBvpGradient = solBvpGradient.sol(r)[0]
@@ -343,9 +348,20 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
 #plt.plot(r, dfourierFunctionE_f(r), label="dFourierE")
 #plt.plot(r, dfourierFunctionNy_f(r) * 10**6, label="dFourierNy * 10^6")
 #plt.plot(r, dFormulaFourierFunctionE_f(r), label="dFormulaFourierE")
-exponent = m.floor(m.log10(abs(dDerivativeTanhE.max())))
+
+try:
+    exponent = m.floor(m.log10(abs(dDerivativeTanhE.max())))
+except Exception as e: 
+    print(e)
+    print("Error during plotting")
+    exponent = 0
 plt.plot(r, dDerivativeTanhE / 10**exponent, label=f"dDerivativeTanhE *10^{exponent}")
-exponent = m.floor(m.log10(abs(dDerivativeTanhNy.max())))
+try:
+    exponent = m.floor(m.log10(abs(dDerivativeTanhNy.max())))
+except Exception as e: 
+    print(e)
+    print("Error during plotting")
+    exponent = 0
 plt.plot(r, dDerivativeTanhNy / 10**exponent, label=f"dDerivativeTanhNy *10^{exponent}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/mm^3 für dny in 1/m E{int(np.log10(mSkalierung))} E2")
@@ -355,12 +371,27 @@ plt.legend()
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
-exponent = m.floor(m.log10(abs(dGradientE.max())))
+try:
+    exponent = m.floor(m.log10(abs(dGradientE.max())))
+except Exception as e: 
+    print(e)
+    print("Error during plotting")
+    exponent = 0
 plt.plot(r, dGradientE / 10**exponent, label=f"dGradientE *10^{exponent}")
-exponent = m.floor(m.log10(abs(dGradientNy.max())))
+try:
+    exponent = m.floor(m.log10(abs(dGradientNy.max())))
+except Exception as e:
+    print(e)
+    print("Error during plotting")
+    exponent = 0
 plt.plot(r, dGradientNy / 10**exponent, label=f"dGradientNy *10^{exponent}")
 RPlot = calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j
-exponent = abs(m.floor(m.log10(abs(RPlot.max()))))
+try:
+    exponent = abs(m.floor(m.log10(abs(RPlot.max()))))
+except Exception as e:
+    print(e)
+    print("Error during plotting")
+    exponent = 0
 plt.plot(r, calcBFeld(r, r_a, r_i, b_za, b_zi, b_0) * j / 10**exponent, label=f"R * 10^{exponent}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"Änderung für dE in N/(m E{int(np.log10(mSkalierung))})^3 für dny in 1/m E{int(np.log10(mSkalierung))}")
