@@ -17,7 +17,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 60        # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 1        # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(300000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 
@@ -48,7 +48,7 @@ materialWidths = [t_con, t_cow, t_ins]
 E_con = 280 * 10**9 * mSkalierung**(-1) # E-Modul Conductor
 E_cow = 300 * 10**9 * mSkalierung**(-1) # E-Modul Cowinding
 E_ins = 200 * 10**9 * mSkalierung**(-1) # E-Modul Insulation
-materialEs = [500, 450, 400]
+materialEs = [E_con, E_cow, E_ins]
 
 ny_con = 0.35 #* 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
 ny_cow = 0.3 # Possion's Ratio Cowinding
@@ -303,7 +303,7 @@ def nyRespectR(r, rArray, nyArray):
 r = np.linspace(r_i, r_a, 500000)
 rDom = calcDomains(r_i, materialWidths, 600, len(r))
 Ny = calcNyWithDomains(rDom, materialNys)
-s_r, s_phi = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rExterior=0, s_zBegin=0, windings=600, nyArray=Ny, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+s_r, s_phi = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rExterior=-1000000, s_zBegin=0, windings=600, nyArray=Ny, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
 plt.subplot(2,1,1)
 plt.grid(True)
 plt.plot(rDom.flatten(), s_r)
