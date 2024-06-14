@@ -2,34 +2,34 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-# Definierte Werte
-#   Konstanten des Versuchsaufbau
-nu = 0.3             # [-] possion's ratio
-#p = 1 - nu # [-] const.
+# # Definierte Werte
+# #   Konstanten des Versuchsaufbau
+# nu = 0.3             # [-] possion's ratio
+# #p = 1 - nu # [-] const.
 
-#   Spannungsrandbedingungen
-#s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
-#s_ra = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
-#s_ri = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
+# #   Spannungsrandbedingungen
+# #s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
+# #s_ra = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
+# #s_ri = 10   *  (10**6)  # [Pa] !!!Wert frei gewählt
 
-r_i = 0.430 # [m] innerer radius
-r_a = 0.646 # [m] äußerer radius
-r = np.linspace(r_i,r_a,216) # array mit diskreten Radien
+# r_i = 0.430 # [m] innerer radius
+# r_a = 0.646 # [m] äußerer radius
+# r = np.linspace(r_i,r_a,216) # array mit diskreten Radien
 
-j = 114.2   * (1000**2) # [A/m^2] Stromdichte
-b_za = -2.5             # [T] magnetische Flussdichte außen
-b_zi = 14               # [T] magnetische Flussdichte innen
-b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
+# j = 114.2   * (1000**2) # [A/m^2] Stromdichte
+# b_za = -2.5             # [T] magnetische Flussdichte außen
+# b_zi = 14               # [T] magnetische Flussdichte innen
+# b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
 
-#def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
-#    return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
+# #def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
+# #    return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
 
 
 def calcIntegral(n, r, r_End, r_Start, j, b_za, b_zi, b_0):
-    return j * (  (b_za - b_zi)/(r_End - r_Start) * (1 / (n+2) ) * (r**(n+2) - r_i**(n+2)) 
-                 +  b_0                     * (1/  (n+1) ) * (r**(n+1) - r_i**(n+1)))
+    return j * (  (b_za - b_zi)/(r_End - r_Start) * (1 / (n+2) ) * (r**(n+2) - r_Start**(n+2)) 
+                 +  b_0                     * (1/  (n+1) ) * (r**(n+1) - r_Start**(n+1)))
     
-def calcStresses(r, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
+def calcStresses(r, r_a, r_i, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
     ### Berechne s_z
     s_z = s_z0  # from eq (4)
     
@@ -57,3 +57,13 @@ def calcStresses(r, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
                  - s_rArray )
     
     return[s_rArray, s_phiArray]
+
+
+# r = np.linspace(r_i, r_a, 5000)
+# sArray = calcStresses(r, 0, 0, 0, 0.3, b_za, b_zi, b_0, j)
+
+# plt.subplot(2,1,1)
+# plt.plot(r, sArray[0])
+# plt.subplot(2,1,2)
+# plt.plot(r, sArray[1])
+# plt.show()
