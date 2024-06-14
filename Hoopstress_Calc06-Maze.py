@@ -26,7 +26,7 @@ solbvpMaxNodesGradient = 5000
 
 #   Subplots
 anzahlRowPlots = 2
-anzahlColumnPlots = 4
+anzahlColumnPlots = 6
 
 #   Spannungsrandbedingungen
 
@@ -274,6 +274,19 @@ u_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(
                                 calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsE, materialValues=materialEs * mSkalierung) * mSkalierung, calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsNy, materialValues=materialNys))[0]
 
 u_rDerivative = calcDisplacement(r, s_rSolBvpDerivativeTanh, s_phiSolBvpDerivativeTanh, E, ny)[0]
+
+e_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[1]
+e_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+                                calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsE, materialValues=materialEs * mSkalierung) * mSkalierung, calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsNy, materialValues=materialNys))[1]
+e_rDerivative = calcDisplacement(r, s_rSolBvpDerivativeTanh, s_phiSolBvpDerivativeTanh, E, ny)[1]
+
+
+e_zGradient = -ny/E * (s_rSolBvpGradient + s_phiSolBvpGradient)
+e_zCaldwell = (-0.33/(450*10**9 * mSkalierung**(-1))) * (mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] + mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1])
+e_zDerivative = -ny/E * (s_rSolBvpDerivativeTanh + s_phiSolBvpDerivativeTanh)
+
+
 ##### Plots
 #rTest = np.linspace(r_i, r_a, 5000)
 # sArray = calcStresses(rTest, 0, 0, 0, 0.3, b_za, b_zi, b_0, j)
@@ -426,6 +439,36 @@ plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"u_r in m E{int(np.log10(mSkalierung))}")
 plt.legend()
 
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 5)
+plt.plot(r, e_rGradient, label="e_r berechnet über BVP mit Differenzenquotient")
+plt.plot(r, e_rCaldwell * mSkalierung**(-1), "b", label="e_r berechnet über Caldwell")
+plt.plot(r, e_rDerivative, label=f"e_r berechnet über BVP mit analytischer Ableitung\ne_ri={round(e_rDerivative[0], 6)}; e_ra={round(e_rDerivative[-1], 6)}")
+plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
+plt.ylabel(f"e_r in [-] E{int(np.log10(mSkalierung))}")
+plt.legend()
+
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 5)
+plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+plt.plot(r, 1/r * s_phiSolBvpGradient * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit Differenzenquotienten")
+plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
+plt.ylabel(f"e_phi in [-] E{int(np.log10(mSkalierung))}")
+plt.legend()
+
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 6)
+plt.plot(r, e_zGradient, label="e_z berechnet über BVP mit Differenzenquotient")
+plt.plot(r, e_zCaldwell * mSkalierung**(-1), "b", label="e_z berechnet über Caldwell")
+plt.plot(r, e_zDerivative, label=f"e_z berechnet über BVP mit analytischer Ableitung\ne_zi={round(e_zDerivative[0], 6)}; e_za={round(e_zDerivative[-1], 6)}")
+plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
+plt.ylabel(f"e_z in [-] E{int(np.log10(mSkalierung))}")
+plt.legend()
+
+# plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 6)
+# plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+# plt.plot(r, 1/r * s_phiSolBvpGradient * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit Differenzenquotienten")
+# plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
+# plt.ylabel(f"e_phi in [-] E{int(np.log10(mSkalierung))}")
+# plt.legend()
+
 
 # Save plot
 fig = plt.gcf()
@@ -435,4 +478,5 @@ pictureName = f"Bilder\Graphen{currentTime.year}-{currentTime.month:02d}-{curren
 plt.savefig(pictureName, dpi=500)
 
 print("Fertig")
+# plt.tight_layout()  # Passt das Layout an, um Überlappungen zu vermeiden
 plt.show()
