@@ -31,7 +31,7 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
 
 #####   Definierte Werte
 mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 totalWindings = int(600 /windingDivisor)
@@ -281,9 +281,11 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     
     
     ###Berechne u_r
-    u_rArray = ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_rArray + s_phiArray) ) * rDomains[0]
-    e_rArray = ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_rArray + s_phiArray) )
-    e_phiArray = 1/rDomains[0] * s_phiArray
+    u_rArray =   ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_rArray + s_phiArray) ) * rDomains[0]
+    e_phiArray = ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_rArray + s_phiArray) )
+    e_rArray = ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_phiArray + s_rArray) )
+    #e_rArray = ( 1/nyRespectR(rCenter, rArray, EArray) * ( - nyRespectR(rCenter, rArray, nyArray) * s_rArray + s_phiArray) )
+    #e_phiArray = 1/rDomains[0] * s_phiArray
     e_zArray = (-nyRespectR(rCenter, rArray, nyArray) / nyRespectR(rCenter, rArray, EArray) ) * (s_rArray + s_phiArray)
     
     for winding in range(len(rDomains) - 1):
@@ -312,10 +314,13 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
         
         u_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) ) * rDomains[winding]
     
-        e_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
+        # e_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
+        # #e_phiArrayNew = 1/rDomains[0] * s_phiArrayNew###############################
+        # e_phiArrayNew = 1/rDomains[winding] * s_phiArrayNew
+        e_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_phiArrayNew + s_rArrayNew) )
         #e_phiArrayNew = 1/rDomains[0] * s_phiArrayNew###############################
-        e_phiArrayNew = 1/rDomains[winding] * s_phiArrayNew
-        e_zArrayNew = (-nyRespectR(rCenter, rArray, nyArray) / nyRespectR(rCenter, rArray, EArray) ) * (s_rArrayNew + s_phiArrayNew)
+        e_phiArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
+        e_zArrayNew = (-nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) / nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) ) * (s_rArrayNew + s_phiArrayNew)
     
         
         s_rArray = np.append(s_rArray, s_rArrayNew)
@@ -450,7 +455,7 @@ plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
 #plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
-plt.plot(rDomFlattened, e_phiAnalytical, "--", label="e_phi analytisch berechnet")
+plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytisch berechnet")
 #plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
 plt.ylabel("e_phi in [-]")
 plt.legend()
