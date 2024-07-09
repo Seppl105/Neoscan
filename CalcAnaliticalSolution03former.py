@@ -31,7 +31,7 @@ def calcDisplacement(r, s_r, s_phi, E, ny):
 
 #####   Definierte Werte
 mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 totalWindings = int(600 /windingDivisor)
@@ -130,10 +130,12 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     rEnds.pop(0)
     rEnds.append(rArray[-1]) #rEnds.append(rExterior)
     
-    # if confinement is defined some thaughts have to be adapted
+    # if confinement is defined some thoughts
+    jConfinement = 0
     confinementDefined = 0
     if rExterior != rArray[-1]:
         confinementDefined = 1
+        print("confinement ist definiert mit rArray[-1]: ", rArray[-1], "und rExterior: ", rExterior)
     #print(rEnds)
     
     # lists to assemble the sparse matrix
@@ -147,15 +149,20 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     # first set of equations is assembled (one for each intervall of r) derived from eq. (14CA) with sigma_z=const.
     cB = lambda r, r1 : 1/2 * (1 - r1**2/r**2)
     cA = lambda r, r1 : 1/2 * (1 + r1**2/r**2)
-    c = lambda r, r1, ny : - 1/2 * (1+ny) * calcIntegral(n=0, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0) - 1/r**2 * (1 - (1+ny)/2 ) * calcIntegral(n=2, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+    c = lambda r, r1, ny, jC: - 1/2 * (1+ny) * calcIntegral(n=0, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=jC, b_za=b_za, b_zi=b_zi, b_0=b_0) - 1/r**2 * (1 - (1+ny)/2 ) * calcIntegral(n=2, r=r, r_Start=r1, r_Exterior=rExterior, r_Center=rCenter, j=jC, b_za=b_za, b_zi=b_zi, b_0=b_0)
 
     for i, rJump in enumerate(rEnds):
         if i == 0:
             riStart = rCenter
-            constant.append(cA(rJump, riStart) * s_rCenter + c(rJump, riStart, nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) ) 
+            constant.append(cA(rJump, riStart) * s_rCenter + c(rJump, riStart, nyRespectR( (riStart+rJump)/2 , rArray, nyArray), j)) 
         else:
             riStart = rEnds[i - 1]
-            constant.append(c(rJump, riStart, nyRespectR( (riStart+rJump)/2 , rArray, nyArray)))
+            if confinementDefined == 1 and rJump == rEnds[-1]:
+                jNew = jConfinement
+                print("NUR EINMAL STEHT DAS HIER DA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            else:
+                jNew = j
+            constant.append(c(rJump, riStart, nyRespectR( (riStart+rJump)/2 , rArray, nyArray), jNew))
         row.extend([i, i, i])
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +3])
@@ -183,8 +190,13 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
             riStart = rCenter                                                                               
             constant.append(s_rCenter - (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)) 
         else:
+            if confinementDefined == 1 and rJump == rEnds[-1]:
+                jNew = jConfinement
+                print("UND NUR EINMAL STEHT DAS HIER DA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            else:
+                jNew = j
             riStart = rEnds[i - 1]
-            constant.append(- (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0))
+            constant.append(- (1+nyRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0))
         # one extra row is added if the confinement is defined
         row.extend([windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined])
         icol = 3*i - 1
@@ -264,6 +276,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     nonzero_values = A.data
     #print(len(data), len(nonzero_values))
     
+    #print(constant)
     #plt.scatter(col, row, c=nonzero_values, cmap="YlGnBu",)
     plt.scatter(col, row, c=nonzero_values, cmap="brg",)
     #plt.scatter(col, row, c=nonzero_values, cmap="turbo",)
@@ -306,39 +319,45 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     #e_phiArray = 1/rDomains[0] * s_phiArray
     e_zArray = (-nyRespectR(rCenter, rArray, nyArray) / nyRespectR(rCenter, rArray, EArray) ) * (s_rArray + s_phiArray)
     
-    for winding in range(len(rDomains) - 1):
+    for layer in range(len(rDomains) - 1):
         #rNew = np.linspace()######################################################
-        winding += 1
-        # print(result[3*winding], rEnds[winding - 1], len(rDomains[winding]))
-        # print(len(- ((1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray)) / 2) * calcIntegral(0, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
-        # print(len(-  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]-rEnds[winding-1]/2), rArray, nyArray))/2 ) * calcIntegral(2, rDomains[winding], rDomains[winding][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
-        # print(len(+  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/r**2)))))
-        # print(+  (result[3*winding - 1]  *  (1/2)  ))
-        # print((1 + (rEnds[winding - 1])))
+        layer += 1
+        
+        if confinementDefined == 1 and layer == (len(rDomains) - 2):
+            print("DAS SOLLTE NUR EINMAL DA STEHEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            jNew = jConfinement
+        else:
+            jNew = j
+        # print(result[3*layer], rEnds[layer - 1], len(rDomains[layer]))
+        # print(len(- ((1 + nyRespectR( (rEnds[layer]-rEnds[layer-1]/2), rArray, nyArray)) / 2) * calcIntegral(0, rDomains[layer], rDomains[layer][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
+        # print(len(-  (1/rDomains[layer]**2) * (1 - (1 + nyRespectR( (rEnds[layer]-rEnds[layer-1]/2), rArray, nyArray))/2 ) * calcIntegral(2, rDomains[layer], rDomains[layer][0], rExterior, rCenter, j, b_za, b_zi, b_0)))
+        # print(len(+  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/r**2)))))
+        # print(+  (result[3*layer - 1]  *  (1/2)  ))
+        # print((1 + (rEnds[layer - 1])))
         # print(len(r**2))
         
-        s_rArrayNew = (  (1/2) * result[3*winding] * (1 - rEnds[winding - 1]**2/rDomains[winding]**2) 
-                    - ((1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                    -  (1/rDomains[winding]**2) * (1 - (1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                    +  (result[3*winding - 1]  *  (1/2)  *  (1 + (rEnds[winding - 1]**2/rDomains[winding]**2))))
-        # result[3*winding -1] = s_r,winding,Start -> last Value for winding = windings*len(materials) - 1 because range is subtracting one und one was manually added
+        s_rArrayNew = (  (1/2) * result[3*layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
+                    - ((1 + nyRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    -  (1/rDomains[layer]**2) * (1 - (1 + nyRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    +  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
+        # result[3*layer -1] = s_r,layer,Start -> last Value for layer = layers*len(materials) - 1 because range is subtracting one und one was manually added
         
         
-        s_phiArrayNew = ( (result[3*winding] - nyRespectR( (rEnds[winding]+rEnds[winding-1])/2 , rArray, nyArray) * s_zBegin)  
-                        +  nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_z  
-                        -  (1 + nyRespectR( (rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray)) * calcIntegral(n=0, r=rDomains[winding], r_Start=rDomains[winding][0], r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                        + result[3*winding - 1]
+        s_phiArrayNew = ( (result[3*layer] - nyRespectR( (rEnds[layer]+rEnds[layer-1])/2 , rArray, nyArray) * s_zBegin)  
+                        +  nyRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_z  
+                        -  (1 + nyRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                        + result[3*layer - 1]
                         - s_rArrayNew )
         
-        u_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) ) * rDomains[winding]
+        u_rArrayNew = ( 1/nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) ) * rDomains[layer]
     
-        # e_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
+        # e_rArrayNew = ( 1/nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
         # #e_phiArrayNew = 1/rDomains[0] * s_phiArrayNew###############################
-        # e_phiArrayNew = 1/rDomains[winding] * s_phiArrayNew
-        e_rArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_phiArrayNew + s_rArrayNew) )
+        # e_phiArrayNew = 1/rDomains[layer] * s_phiArrayNew
+        e_rArrayNew = ( 1/nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_phiArrayNew + s_rArrayNew) )
         #e_phiArrayNew = 1/rDomains[0] * s_phiArrayNew###############################
-        e_phiArrayNew = ( 1/nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
-        e_zArrayNew = (-nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, nyArray) / nyRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) ) * (s_rArrayNew + s_phiArrayNew)
+        e_phiArrayNew = ( 1/nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, EArray) * ( - nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_rArrayNew + s_phiArrayNew) )
+        e_zArrayNew = (-nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) / nyRespectR((rEnds[layer]+rEnds[layer-1])/2, rArray, EArray) ) * (s_rArrayNew + s_phiArrayNew)
     
         
         s_rArray = np.append(s_rArray, s_rArrayNew)
@@ -347,7 +366,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
         e_rArray = np.append(e_rArray, e_rArrayNew)
         e_phiArray = np.append(e_phiArray, e_phiArrayNew)
         e_zArray = np.append(e_zArray, e_zArrayNew)
-        #print(winding)
+        #print(layer)
     
     
     #print(nyRespectR(r_i, rArray, nyArray))
