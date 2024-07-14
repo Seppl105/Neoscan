@@ -34,6 +34,7 @@ def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialV
             for width in materialWidths:
                 thisSpot += width
                 results.append(thisSpot)
+        # results.append(materialWidths[0])
         return np.array(results)
 
     def calcA(e):
@@ -65,26 +66,30 @@ def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialV
 
     # Calculate Number of Windings
     windings = lambda x, y, z: (x - y) / z
-    numberOfWindings = int(windings(r_aussen, r_innen, t))  # should be 600/q Windings with given measurements
+    numberOfWindings = int(windings(r_aussen - 10, r_innen, t))  # should be 600/q Windings with given measurements
     print("Anzahl der Windungen: ", numberOfWindings)
 
 
-    A = np.ones(numberOfMaterials * numberOfWindings - 1)  # A[i] = DeltaE/2
-    B = np.ones(numberOfMaterials * numberOfWindings - 1) * slope  # B[i] = >500 (almost) free to choose; must be high enough
-    C = np.ones(numberOfMaterials * numberOfWindings - 1)  # C[i] = -B * r_jump
-    D = np.ones(numberOfMaterials * numberOfWindings - 1)  # D[i] = E_(i) + A
+    A = np.ones(numberOfMaterials * numberOfWindings - 0)  # A[i] = DeltaE/2
+    B = np.ones(numberOfMaterials * numberOfWindings - 0) * slope  # B[i] = >500 (almost) free to choose; must be high enough
+    C = np.ones(numberOfMaterials * numberOfWindings - 0)  # C[i] = -B * r_jump
+    D = np.ones(numberOfMaterials * numberOfWindings - 0)  # D[i] = E_(i) + A
 
     # Three YOUNG's Modulus for each winding
     E = np.ones(numberOfMaterials * numberOfWindings)
     for i in range(numberOfMaterials):
         E[i::numberOfMaterials] = materialValues[i]
+    E = np.append(E, materialValues[0])
 
     jumpspot = calcJumpspot(r_innen, materialWidths, numberOfWindings)
-    jumpspot = jumpspot[:-1]  # last spot not of interest
+    # jumpspot = jumpspot[:-1]  # last spot not of interest
 
     A = calcA(E)
+    print(len(A))
     C = calcC(B, jumpspot)
+    print(len(C))
     D = calcD(A)
+    print(len(D))
 
     # # Discretisation for all radii of every winding
     # r = np.linspace(r_innen, (r_innen + numberOfWindings * t), scale * numberOfWindings)

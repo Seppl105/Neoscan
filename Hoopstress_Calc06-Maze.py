@@ -56,13 +56,13 @@ materialEs = [500 *10**9 *mSkalierung**(-1), 450 *10**9 * mSkalierung**(-1), 400
 ny_con = 0.35 * 10**9 * mSkalierung**(-1) # Possion's Ratio Conductor
 ny_cow = 0.3 # Possion's Ratio Cowinding
 ny_ins = 0.4 # Possion's Ratio Insulation
-materialNys = [0.35, 0.33, 0.4]
+materialNys = [0.35, 0.30, 0.4]
 
 #   Konstanten des Versuchsaufbau
 
 r_i = 0.430 * mSkalierung               # [m] innerer radius
 r_a = 0.646 * mSkalierung               # [m] äußerer radius
-r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))
+r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))  + 10
 
 r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
 
@@ -73,7 +73,16 @@ b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleich
 
 # Funktion zur Berechnung des B-Felds an der Stelle r
 def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
-    return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
+    b = np.zeros(numberOfValues)
+    b = (((b_za - b_zi)/((r_a - 10) - r_i))  *  r + b_0)  * (1 - 1 * np.tanh(700 * r - 700 * ((r_a - 10)))) # * (1 - np.heaviside(r - ((r_a - 10)), 0.5))
+    return b
+
+b = calcBFeld(r,r_a,r_i, b_za, b_zi, b_0)
+plt.plot(r, b)
+plt.show()
+
+# def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
+#     return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
 
 coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
 E = calcTanhValue(r, coefficientsE, materialEs)
@@ -462,12 +471,10 @@ plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"e_z in [-] E{int(np.log10(mSkalierung))}")
 plt.legend()
 
-# plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 6)
-# plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
-# plt.plot(r, 1/r * s_phiSolBvpGradient * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit Differenzenquotienten")
-# plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
-# plt.ylabel(f"e_phi in [-] E{int(np.log10(mSkalierung))}")
-# plt.legend()
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 6)
+plt.plot(r, ((b_za - b_zi)/(r_a - r_i))  *  r + b_0)
+plt.ylabel("B(r)")
+plt.legend()
 
 
 # Save plot
