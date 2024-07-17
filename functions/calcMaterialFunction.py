@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialValues, slope=1000, scale=720):
+def calcMaterialTanhCoefficients(r_innen, r_aussen, t, t_conf, materialWidths, materialValues, slope=1000, scale=720):
     '''Calculates the coefficients of the smooth function E(r) that consists of hyperbolic tangents.'''
     '''Calculates at equally distributed spots in r the according YOUNG's Modulus.'''
     ### f(x) = A * tanh(B*x + C) + D
@@ -66,7 +66,7 @@ def calcMaterialTanhCoefficients(r_innen, r_aussen, t, materialWidths, materialV
 
     # Calculate Number of Windings
     windings = lambda x, y, z: (x - y) / z
-    numberOfWindings = int(windings(r_aussen - 10, r_innen, t))  # should be 600/q Windings with given measurements
+    numberOfWindings = int(windings((r_aussen-t_conf), r_innen, t))  # should be 600/q Windings with given measurements
     print("Anzahl der Windungen: ", numberOfWindings)
 
 
