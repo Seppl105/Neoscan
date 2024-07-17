@@ -19,7 +19,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(500000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 solbvpMaxNodesGradient = 5000
@@ -62,19 +62,26 @@ materialNys = [0.35, 0.30, 0.4]
 
 r_i = 0.430 * mSkalierung               # [m] innerer radius
 r_a = 0.646 * mSkalierung               # [m] äußerer radius
-r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))  + 10
+t_conf = 1
+r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor)) + t_conf
+r_dcald = np.linspace(r_i, r_a-t_conf, numberOfValues)
 
-r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radien
+r = np.linspace(r_i,r_a, numberOfValues) # array mit diskreten Radie
 
 j = 114.2 * 10**6 * mSkalierung**(-2)       # [A/m^2] Stromdichte
 b_za = -2.5                             # [T] magnetische Flussdichte außen
 b_zi = 14                               # [T] magnetische Flussdichte innen
-b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
+b_0 = b_za - (b_za-b_zi)/((r_a-t_conf)-r_i) * (r_a-t_conf) # [T] absolutes Glied der Geradengleichung für B(r)
 
 # Funktion zur Berechnung des B-Felds an der Stelle r
 def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
     b = np.zeros(numberOfValues)
-    b = (((b_za - b_zi)/((r_a - 10) - r_i))  *  r + b_0)  * (1 - 1 * np.tanh(700 * r - 700 * ((r_a - 10)))) # * (1 - np.heaviside(r - ((r_a - 10)), 0.5))
+    b = (((b_za - b_zi)/((r_a-t_conf) - r_i))  *  r + b_0)  * (1/2 - 1/2 * np.tanh(700 * r - 700 * ((r_a - t_conf)))) # * (1 - np.heaviside(r - ((r_a - 10)), 0.5))
+    return b
+
+def calccaldBFeld(r, r_a, r_i, b_za, b_zi, b_0):
+    b = np.zeros(numberOfValues)
+    b = (((b_za - b_zi)/(r_a - r_i))  *  r + b_0)
     return b
 
 b = calcBFeld(r,r_a,r_i, b_za, b_zi, b_0)
@@ -84,7 +91,7 @@ plt.show()
 # def calcBFeld(r, r_a, r_i, b_za, b_zi, b_0):
 #     return ((b_za - b_zi)/(r_a - r_i))  *  r + b_0
 
-coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, materialWidths, materialEs, slope=1000, scale=720)
+coefficientsE = calcMaterialTanhCoefficients(r_i , r_a, t, t_conf, materialWidths, materialEs, slope=1000, scale=720)
 E = calcTanhValue(r, coefficientsE, materialEs)
 print("E: ", E)
 #E = np.ones(numberOfValues) * 100 * 10**9 * mSkalierung**(-1) # E Modul in  N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
@@ -92,7 +99,7 @@ print("E: ", E)
 #E[len(E) - int(0.2* numberOfValues):] = 150 * 10**9 * mSkalierung**(-1)
 
 
-coefficientsNy = calcMaterialTanhCoefficients(r_i, r_a, t, materialWidths, materialNys, slope=1000, scale=720)
+coefficientsNy = calcMaterialTanhCoefficients(r_i, r_a, t, t_conf, materialWidths, materialNys, slope=1000, scale=720)
 ny = calcTanhValue(r, coefficientsNy, materialNys)
 #ny = np.ones(numberOfValues) * 0.3 # Querkontraktionszahl
 #ny[len(E) - int(0.2* numberOfValues):] = 0.25
@@ -189,11 +196,11 @@ def plotDeviation(r, sol, solName, referenceSol, referenceSolName):
 ### Bestimmen der Spannungen in radiale Richtungen s_r(r) und in Umfangsrichtung s_phi(r)
 
 # calculating the radial force, the numerical pendant, the first derivative and the numerical pendant
-xSmp = smp.Symbol("xSmp", real=True)
-radialForce = calcBFeld(xSmp, r_a, r_i, b_za, b_zi, b_0) * j
-radialForce_f = smp.lambdify(xSmp, radialForce)
-dradialForce = smp.diff(radialForce, xSmp)
-dradialForce_f = smp.lambdify(xSmp, dradialForce)
+# xSmp = smp.Symbol("xSmp", real=True)
+# radialForce = calcBFeld(xSmp, r_a, r_i, b_za, b_zi, b_0) * j
+# radialForce_f = smp.lambdify(xSmp, radialForce) * (1 - 1 * np.tanh(700*r - 303520))
+# dradialForce = smp.diff(radialForce, xSmp)
+# dradialForce_f = smp.lambdify(xSmp, dradialForce)
 
 ####################################################################################################################
 ####   lösen des DGL Systems 1. Ordnung bestehend aus (b*) für d(sigma_r)/dr und (a*) für d(sigma_phi)/dr
@@ -273,26 +280,28 @@ s_phiSolBvpDerivativeTanh = solBvpDerivativeTanh.sol(r)[1]
 ### Berechnen der Verschiebungen
 print("Berechnen der Verschiebungen")
 
+b_0cald = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
+r_cald = r_a - t_conf
 u_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[0]
 # u_rCaldwell = (calcDisplacement(r * mSkalierung*(-1),  calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**(2))[0],
 #                                                        calcStresses(r=r * mSkalierung**(-1), s_z0=0, s_ri=0, s_ra=0, nu=0.3, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**(2))[1], 
 #                                100 * 10**9, 0.3)[0] #########################################################################################################
 #                 * mSkalierung**1)      # Berechnung von calc Displacement in SI Basiseinheiten und dann Umrechnung von m in mm
-u_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
-                                                                   mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+u_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[1],
                                 calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsE, materialValues=materialEs * mSkalierung) * mSkalierung, calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsNy, materialValues=materialNys))[0]
 
 u_rDerivative = calcDisplacement(r, s_rSolBvpDerivativeTanh, s_phiSolBvpDerivativeTanh, E, ny)[0]
 
 e_rGradient = calcDisplacement(r, s_rSolBvpGradient, s_phiSolBvpGradient, E, ny)[1]
-e_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0],
-                                                                   mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1],
+e_rCaldwell = 1000**(1) * calcDisplacement(r * mSkalierung**(-1), mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[0],
+                                                                   mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[1],
                                 calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsE, materialValues=materialEs * mSkalierung) * mSkalierung, calcTanhValue(r=0.4302 * mSkalierung, coeff=coefficientsNy, materialValues=materialNys))[1]
 e_rDerivative = calcDisplacement(r, s_rSolBvpDerivativeTanh, s_phiSolBvpDerivativeTanh, E, ny)[1]
 
 
 e_zGradient = -ny/E * (s_rSolBvpGradient + s_phiSolBvpGradient)
-e_zCaldwell = (-0.33/(450*10**9 * mSkalierung**(-1))) * (mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] + mSkalierung**(-0) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1])
+e_zCaldwell = (-0.33/(450*10**9 * mSkalierung**(-1))) * (mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[0] + mSkalierung**(-0) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0cald, j=j * mSkalierung**2)[1])
 e_zDerivative = -ny/E * (s_rSolBvpDerivativeTanh + s_phiSolBvpDerivativeTanh)
 
 
@@ -347,7 +356,7 @@ plt.ylabel(f"s_phi in N/(m E{int(np.log10(mSkalierung))})^2")
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 #plt.plot(r, s_rSolBvpFourier, label="s_r berechnet als BVP mit Fourierreihe")
-plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ra=s_ra, s_ri=s_ri, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2) [0], label="s_r nach Caldwell")
+plt.plot(r_dcald, mSkalierung**(-2) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ra=s_ra, s_ri=s_ri, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2) [0], label="s_r nach Caldwell")
 # plt.plot(rTest, calcStresses(rTest,r_a,r_i, 0, 0, 0, 0.3, b_za, b_zi, b_0, j)[0], label="s_r nach Caldwell")
 
 plt.plot(r, s_rSolBvpGradient * mSkalierung**(-1), "--", label="s_r berechnet als BVP mit Differenzenquotienten") 
@@ -358,7 +367,7 @@ plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 #plt.plot(r, s_phiSolBvpFourier, label="s_phi berechnet als BVP mit Fourierreihe")
-plt.plot(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="s_phi nach Caldwell")
+plt.plot(r_dcald, mSkalierung**(-2) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="s_phi nach Caldwell")
 plt.plot(r, s_phiSolBvpGradient * mSkalierung**(-1), "--", label="s_phi berechnet als BVP mit Differenzenquotienten") 
 plt.plot(r, s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="s_phi berechnet als BVP mit analytischer Ableitung") 
 
@@ -423,8 +432,8 @@ ax4 = plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
 plotDeviation(r, u_rGradient, "u_rGradient", u_rDerivative, "u_rDerivative")
 plotDeviation(r, s_rSolBvpGradient, "s_rGradient", s_rSolBvpDerivativeTanh, "s_rDerivative")
 plotDeviation(r, s_phiSolBvpGradient, "s_phiGradient", s_phiSolBvpDerivativeTanh, "s_phiDerivative")
-plotDeviation(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
-plotDeviation(r, mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
+plotDeviation(r_dcald, mSkalierung**(-2) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1] , "s_phiCaldwell", s_phiSolBvpDerivativeTanh, "s_phi Derivative")
+plotDeviation(r_dcald, mSkalierung**(-2) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[0] , "s_rCaldwell", s_rSolBvpDerivativeTanh, "s_r Derivative")
 # Shrink current axis's height by 10% on the bottom
 box = ax4.get_position()
 ax4.set_position([box.x0, box.y0 + box.height * 0.3,
@@ -457,7 +466,7 @@ plt.ylabel(f"e_r in [-] E{int(np.log10(mSkalierung))}")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 5)
-plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+plt.plot(r_dcald, 1/r * mSkalierung**(-2) * calcStresses(r=r_dcald * mSkalierung**(-1), r_a=r_cald * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
 plt.plot(r, 1/r * s_phiSolBvpGradient * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit Differenzenquotienten")
 plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
 plt.ylabel(f"e_phi in [-] E{int(np.log10(mSkalierung))}")
@@ -465,7 +474,7 @@ plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 6)
 plt.plot(r, e_zGradient, label="e_z berechnet über BVP mit Differenzenquotient")
-plt.plot(r, e_zCaldwell * mSkalierung**(-1), "b", label="e_z berechnet über Caldwell")
+plt.plot(r_dcald, e_zCaldwell * mSkalierung**(-1), "b", label="e_z berechnet über Caldwell")
 plt.plot(r, e_zDerivative, label=f"e_z berechnet über BVP mit analytischer Ableitung\ne_zi={round(e_zDerivative[0], 6)}; e_za={round(e_zDerivative[-1], 6)}")
 plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
 plt.ylabel(f"e_z in [-] E{int(np.log10(mSkalierung))}")
