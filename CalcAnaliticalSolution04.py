@@ -6,7 +6,7 @@ from scipy.linalg import det
 from functions.Hoopstress_Calc02Copy import calcStresses
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
-roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits #######################
+roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
 
 #####   Defintion der Konstanten Werte
 windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
@@ -142,6 +142,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     nyTestDummy2 = []
     for i, rJump in enumerate(rEnds):
         if i == 0:
+            #print("windings, len(materialWidths), i, confinementDefined", windings, len(materialWidths), i, confinementDefined) ###########################################
             riStart = rCenter                                                                               
             constant.append(s_rCenter - (1+materialRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)) 
         else:
@@ -152,7 +153,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
                 jNew = j
             riStart = rEnds[i - 1]
             constant.append(- (1+materialRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0))
-        # one extra row is added if the confinement is defined, therfore the row index has to be adjusted accordingly
+        # if the confinement is defined, one extra row is added. Therfore, the row indices have to be adjusted by adding "confinementDefined"
         row.extend([windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined,  windings*len(materialWidths) + i + confinementDefined])
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +2, icol +3])
@@ -183,7 +184,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
             riStart = rCenter
         else:
             riStart = rEnds[i - 1]
-        # two extra rows were added if the confinement is defined
+        # If the confinement is defined, two extra rows were added. Therfore the row indices have to be adjusted by adding "2*confinementDefined"
         row.extend([2 * windings*len(materialWidths) + i + 2*confinementDefined, 2 * windings*len(materialWidths) + i + 2*confinementDefined, 2 * windings*len(materialWidths) + i + 2*confinementDefined])
         icol = 3*i + 1
         col.extend([icol, icol +1, icol +2])
@@ -197,9 +198,8 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     
     constant.extend([0] * (len(rEnds) - 1))
     
-    # calculate the sparse matrix
-    #A = csr_matrix((data, (row, col)), shape=(3*windings*len(materialWidths) -1, 3*windings*len(materialWidths) -1), dtype=float)
-    # one extra layer for the confinement
+    #### calculate the sparse matrix
+    # one extra layer and therfore 3 equations (/rows) if the confinement is defined
     A = csr_matrix((data, (row, col)), shape=(3*windings*len(materialWidths) -1 + confinementDefined*3, 3*windings*len(materialWidths) -1 + confinementDefined*3), dtype=float)
     #print(A.toarray())
     if windings < 20:
@@ -231,43 +231,34 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     plt.xlabel("Spalte")
     plt.show()
    
-    Ainv = inv(A)
-    #plt.spy(Ainv.todense())
-    plt.show()
-    print(type(Ainv))
-    nonzero_valuesAinv = Ainv.data
-    rowAinv, colAinv = Ainv.nonzero()
+    # plot the inverse matrix
+    # Ainv = inv(A)
+    # #plt.spy(Ainv.todense())
+    # #plt.show()
+    # print(type(Ainv))
+    # nonzero_valuesAinv = Ainv.data
+    # rowAinv, colAinv = Ainv.nonzero()
+    # plt.scatter(colAinv, rowAinv, c=nonzero_valuesAinv, cmap="brg",)
+    # plt.grid(True)
+    # plt.colorbar()
+    # plt.ylabel("Zeile")
+    # plt.gca().invert_yaxis()
+    # plt.xlabel("Spalte")
+    # plt.show()
     
-    plt.scatter(colAinv, rowAinv, c=nonzero_valuesAinv, cmap="brg",)
-    #plt.scatter(col, row, c=nonzero_values, cmap="turbo",)
-    plt.grid(True)
-    plt.colorbar()
-    plt.ylabel("Zeile")
-    plt.gca().invert_yaxis()
-    plt.xlabel("Spalte")
-    plt.show()
-    ####################################################################### linsolve sollte besser sein
-    result = np.linalg.solve(A.todense(), constant)
-    # print("np.linalg.cond(A)", np.linalg.cond(A.todense()))
+    
+    result = np.linalg.solve(A.todense(), constant) # np.linalg.solve is faster and more accurate than inv(.) and .dot(Ainv)
+    
+    # print("np.linalg.cond(A)", np.linalg.cond(A.todense())) # condition number
     # Ainv = inv(A)
     # #Ainv = spsolve(A, identity) # identity is from scipy.sparse
     # result = Ainv.dot(constant)
     
-    # #Ainvinv = inv(Ainv)
-    # #print("type(Ainvinv)", type(Ainvinv))
-    # print("A und inv(inv(A)) sind gleich:", (inv(Ainv) == A).all())
-    #Adense = A.todense()
-    # test = True
-    # for i in range(0, Ainvinv.shape[0]):
-    #     for j in range(0, Ainvinv.shape[1]):
-    #         if (Ainvinv[i][j] != Adense[i][j]):
-    #             print("Element (i,j): (", i," ,", j, ") ist nicht gleich!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    #             test = False
-    # print("A und inv(inv(A)) sind gleich:", test)
-    #toleranceTest = 10**(-8)
-    #print("A und inv(inv(A)) sind mit relativer tolerance= ", toleranceTest, "  fast gleich:", np.allclose(Adense, Ainvinv, rtol=toleranceTest))
+
+    #toleranceRelativeAllclose = 10**(-8)
+    #print("A und inv(inv(A)) sind mit relativer tolerance= ", toleranceTest, "  fast gleich:", np.allclose(Adense, Ainvinv, rtol=toleranceRelativeAllclose))
     
-    #print("inv(Ainv) == A", testInvA)
+
     ### Berechnen der Spannungen im innersten Torus
     # Berechne s_r
     s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/rDomains[0]**2)                               
@@ -290,13 +281,13 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     e_rArray = ( 1/materialRespectR(rCenter, rArray, EArray) * ( - materialRespectR(rCenter, rArray, nyArray) * s_phiArray + s_rArray) )
     e_zArray = (-materialRespectR(rCenter, rArray, nyArray) / materialRespectR(rCenter, rArray, EArray) ) * (s_rArray + s_phiArray)
     
-    ########################################### Wie besprochen
+
     resultSphiStart = result[0::3]
     resultSphiEnd = result[1::3]
     resultSrStart = result[2::3] # does not include the inner BC for s_rInnen
-    print(resultSphiStart[-10:])
-    print(resultSphiEnd[-10:])
-    print(resultSrStart[-10:])
+    print("resultSphiStart[-10:]: ", resultSphiStart[-10:])
+    print("resultSphiEnd[-10:]: ", resultSphiEnd[-10:])
+    print("resultSrStart[-10:]: ", resultSrStart[-10:])
     
     for layer in range(len(rDomains) - 1):
         layer += 1
@@ -307,14 +298,14 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
         else:
             jNew = j
         
-        s_rArrayNew = (  (1/2) * resultSphiStart[layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
-                    - ((1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                    -  (1/rDomains[layer]**2) * (1 - (1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                    +  (resultSrStart[layer-1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
-        # s_rArrayNew = (  (1/2) * result[3*layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
+        # s_rArrayNew = (  (1/2) * resultSphiStart[layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
         #             - ((1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
         #             -  (1/rDomains[layer]**2) * (1 - (1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
-        #             +  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
+        #             +  (resultSrStart[layer-1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
+        s_rArrayNew = (  (1/2) * result[3*layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
+                    - ((1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    -  (1/rDomains[layer]**2) * (1 - (1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                    +  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
         # result[3*layer -1] = s_r,layer,Start -> last Value for layer = layers*len(materials) - 1 because range is subtracting one und one was manually added
         
         s_phiArrayNew = ( (result[3*layer] - materialRespectR( (rEnds[layer]+rEnds[layer-1])/2 , rArray, nyArray) * s_zBegin)                          +  materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_z  
@@ -339,38 +330,8 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
         e_phiArray = np.append(e_phiArray, e_phiArrayNew)
         e_zArray = np.append(e_zArray, e_zArrayNew)
     
-    
-    
     return s_rArray, s_phiArray, u_rArray, e_rArray, e_phiArray, e_zArray
     
-    
-# def calcAnaliticalDisplacement(rDomains, rCenter, s_r, s_phi, windings, EArray, nyArray):
-#     rArray = rDomains.flatten()
-#     rEnds = [item[0] for item in rDomains]
-#     rEnds.pop(0)
-#     rEnds.append(rDomains[-1][-1])
-    
-#     u_rArray = ( 1/materialRespectR(rCenter, rArray, EArray) * ( - materialRespectR(rCenter, rArray, nyArray) * s_r + s_phi) ) * rDomains[0]
-    
-#     for winding in range(len(rDomains) - 1):
-#         winding += 1
-    
-#         u_rArrayNew = ( 1/materialRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * ( - materialRespectR((rEnds[winding]+rEnds[winding-1])/2, rArray, EArray) * s_r + s_phi) ) * rDomains[winding]
-#         u_rArray = np.append(u_rArray, u_rArrayNew)
-    
-#     return [u_rArray]
-    
-#### Letzter Wert in allen Domains, also Werte doppelt    
-# def calcDomains(rCenter, materialWidths, numberOfWindings, numberOfValuesR):
-#     '''Calculates an np.array containing arrays with discrete values coresponding to the material domains; only the last domain contains the end value'''
-#     thisSpot = rCenter
-#     results = []
-#     for i in range(numberOfWindings):
-#         for width in materialWidths:
-#             results.append(np.linspace(thisSpot, thisSpot + width, int(numberOfValuesR/(numberOfWindings * len(materialWidths))) ))
-#             thisSpot += width
-#     return np.array(results)
-
 
 def calcDomains(rCenter, materialWidths, numberOfWindings, numberOfValuesR):
     #Calculates a list containing np.arrays with discrete values coresponding to the material domains; only the last domain contains the end value
@@ -407,7 +368,7 @@ def materialRespectR(r, rArray, materialArray):
     return np.interp(r, rArray, materialArray)
 
 
-def calcDisplacement(r, s_r, s_phi, E, ny):
+def calcDisplacementCaldwell(r, s_r, s_phi, E, ny):
     # used to calculate the displacement and strain according to caldwell
     #print(type(E), type(ny), type(s_r), type(s_phi), type(r))
     #print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
@@ -461,7 +422,7 @@ s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcA
 
 ### Berechnen der Verschiebungen
 s_z = s_z0 # aus Impulsbilanz in z-Richtung
-u_rCaldwell =  calcDisplacement(np.concatenate(rDomFlattened, axis=None).ravel(), calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],
+u_rCaldwell =  calcDisplacementCaldwell(np.concatenate(rDomFlattened, axis=None).ravel(), calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],
                                 calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1],
                                 materialEs[0], materialNys[0])[0]
 
