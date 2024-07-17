@@ -44,7 +44,7 @@ anzahlColumnPlots = 4
 # #   Spannungsrandbedingungen
 
 #s_z0 = 0    *  (10**6)  # [Pa] !!!Wert frei gewählt
-s_ra = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
+s_ra = 500   *  (10**6)  # [Pa] !!!Wert frei gewählt
 s_ri = 0   *  (10**6)  # [Pa] !!!Wert frei gewählt
 s_z0 = 0
 s_z = s_z0
@@ -189,7 +189,8 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rExterior,
     data.pop()
     # add -sigma_r(r_exterior) to the constant vektor
     constant[-1] += -s_rExterior
-    
+    print("Achtung hier")
+    print()
     
     # third set of equations is assembled (one for each material transition) derived from u(r_i-1End) = u_(r_iStart) with sigma_z=const.
     length = len(data)
@@ -405,7 +406,7 @@ print(rDom[0][-1],rDom[1][0],rDom[1][-1],rDom[2][0])
 Ny = calcMaterialValuesWithDomains(rDom, materialNys)
 print("size of Ny: ", Ny.size)
 E = calcMaterialValuesWithDomains(rDom, materialEs)
-s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rExterior=0, s_zBegin=0, windings=totalWindings, nyArray=Ny, EArray=E, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rExterior=5000, s_zBegin=0, windings=totalWindings, nyArray=Ny, EArray=E, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
 
 ### Berechnen der Verschiebungen
 u_rCaldwell =  calcDisplacement(np.concatenate(rDomFlattened, axis=None).ravel(), calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],

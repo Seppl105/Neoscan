@@ -19,7 +19,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 10**(3)        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(500000 / windingDivisor) # Anzahl der Werte des r Vektors
 solbvpMaxNodes = numberOfValues * 3
 solbvpMaxNodesGradient = 5000

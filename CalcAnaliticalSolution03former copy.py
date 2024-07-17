@@ -21,7 +21,7 @@ from datetime import datetime # Nur für die Bennenung der Grafiken
 
 #####   Definierte Werte
 mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 #solbvpMaxNodes = numberOfValues * 3
 totalWindings = int(600/windingDivisor)
@@ -63,7 +63,7 @@ ny_ins = 0.4 # Possion's Ratio Insulation
 materialNys = [ny_con, ny_cow, ny_ins]
 
 #confinement
-t_confinement = 0.0005       # if set to -1 the calculation will run without a confinement
+t_confinement = -1#0.0005       # if set to -1 the calculation will run without a confinement
 E_confinement = E_con
 ny_confinement = ny_con
 
@@ -208,9 +208,14 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     row.pop()
     col.pop()
     data.pop()
+    print(len(constant))
     # add -sigma_r(r_exterior) to the constant vektor
     constant[-1] += -s_rOuter
-    
+    #constant[-1] += 5000
+    #print("Achtung, hier")
+    #print(constant[-1])
+    #print(constant[-2])
+    #print(len(constant))
     
     # third set of equations is assembled (one for each material transition) derived from u(r_i-1End) = u_(r_iStart) with sigma_z=const.
     length = len(data)

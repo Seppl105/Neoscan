@@ -6,11 +6,10 @@ from scipy.linalg import det
 from functions.Hoopstress_Calc02Copy import calcStresses
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
-roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
+roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits #######################
 
 #####   Defintion der Konstanten Werte
-mSkalierung = 1        # Skalierungsfaktor für die Einheit Meter gleich 1, für mm gleich 10*(3), etc. 
-windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 totalWindings = int(600/windingDivisor)
 
@@ -20,20 +19,20 @@ anzahlColumnPlots = 4
 
 #   Spannungsrandbedingungen
 # bei Skalierung zu beachten: N/m^2 E-3 = kg m/(s^2 m^2) E-3 = kg/(s^2 m) E-3 = kg/(s^2 mm)
-s_ra = 0   * mSkalierung**(-1)  # [Pa] Spannung in r-Richtung außen
-s_ri = 0   * mSkalierung**(-1)  # [Pa] Spannung in r-Richtung innen 
-s_z0 = 0   * mSkalierung**(-1)  # [Pa] Spannung in z-Richtung
+s_ra = 0    # [Pa] Spannung in r-Richtung außen
+s_ri = 0    # [Pa] Spannung in r-Richtung innen 
+s_z0 = 0    # [Pa] Spannung in z-Richtung
 
 #   Materialparameter des Leiterbands
-t_con = 0.12 * 10**(-3) * mSkalierung # [m] Dicke des Bandleiters
-t_cow = 0.23 * 10**(-3) * mSkalierung # [m] Dicke des Cowindings
-t_ins = 0.01 * 10**(-3) * mSkalierung # [m] Dicke der Isolation
+t_con = 0.12 * 10**(-3) # [m] Dicke des Bandleiters
+t_cow = 0.23 * 10**(-3) # [m] Dicke des Cowindings
+t_ins = 0.01 * 10**(-3) # [m] Dicke der Isolation
 t = t_con + t_cow + t_ins             # [m] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
 materialWidths = [t_con, t_cow, t_ins]
 
-E_con = 280 * 10**9 * mSkalierung**(-1) # [Pa] E-Modul des Conductors
-E_cow = 300 * 10**9 * mSkalierung**(-1) # [Pa] E-Modul des Cowindings
-E_ins = 200 * 10**9 * mSkalierung**(-1) # [Pa] E-Modul der Insulation
+E_con = 280 * 10**9 # [Pa] E-Modul des Conductors
+E_cow = 300 * 10**9 # [Pa] E-Modul des Cowindings
+E_ins = 200 * 10**9 # [Pa] E-Modul der Insulation
 materialEs = [E_con, E_cow, E_ins]
 
 ny_con = 0.35 # Possion's Ratio Conductor
@@ -42,19 +41,19 @@ ny_ins = 0.4  # Possion's Ratio Insulation
 materialNys = [ny_con, ny_cow, ny_ins]
 
 #   Materialparameter des Confinements
-t_confinement = 0.0005       # [m] Dicke des Confinements (für "-1" wird ohne Confinement gerechnet)
+t_confinement = -1#0.0005       # [m] Dicke des Confinements (für "-1" wird ohne Confinement gerechnet)
 E_confinement = E_con        # [Pa] E-Modul des Confinements
 ny_confinement = ny_con      # Possions's Ratio des Confinements
 
 #   Konstanten des Versuchsaufbau
-r_i = 0.430 * mSkalierung               # [m] innerer Radius
-r_a = 0.646 * mSkalierung               # [m] äußerer Radius ohne Confinement
+r_i = 0.430               # [m] innerer Radius
+r_a = 0.646               # [m] äußerer Radius ohne Confinement
 if r_a != (r_i + t * ( ((r_a - r_i) / t) / windingDivisor)):
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n r_a und t Werte mit der Anzahl der Windungen ergeben nicht dev vorgegegebenen äußeren Radius\n vorgegebener Wert für r_a: ", r_a, "\n mit Dicken berechneter Wert ((r_i + t * ( ((r_a - r_i) / t) / windingDivisor)): ", (r_i + t * ( ((r_a - r_i) / t) / windingDivisor)), "\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 r_a = (r_i + t * ( ((r_a - r_i) / t) / windingDivisor))
 
 
-j = 114.2 * 10**6 * mSkalierung**(-2)    # [A/m^2] Stromdichte
+j = 114.2 * 10**6                        # [A/m^2] Stromdichte
 b_za = -2.5                              # [T] magnetische Flussdichte außen
 b_zi = 14                                # [T] magnetische Flussdichte innen
 b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleichung für B(r)
@@ -88,9 +87,10 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     # wheater the calculation has to be adapted is controled with the variable "confinementDefined"
     jConfinement = 0
     confinementDefined = 0
-    if len(rDomains) != windings*len(materialWidths):  #rExterior != rArray[-1]:
+    if len(rDomains) != windings*len(materialWidths):
         confinementDefined = 1
         print("confinement ist definiert mit rArray[-1]: ", rArray[-1], "und rExterior: ", rExterior)
+        print("rEnds[-5:] ", rEnds[-5:])
     #print(rEnds)
     
     # lists to assemble the sparse matrix
@@ -114,7 +114,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
             riStart = rEnds[i - 1]
             if confinementDefined == 1 and rJump == rEnds[-1]:
                 jNew = jConfinement
-                print("Erstes Set an Gleichungen aufgestellt und Confinement beachtet")
+                print("Erstes Set an Gleichungen aufgestellt und Confinement beachtet. rJump:", rJump)
             else:
                 jNew = j
             constant.append(c(rJump, riStart, materialRespectR( (riStart+rJump)/2 , rArray, nyArray), jNew))
@@ -134,7 +134,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     col.pop()
     data.pop()
     # add -sigma_r(r_exterior) to the constant vektor
-    constant[-1] += -s_rOuter
+    constant[-1] = constant[-1] - s_rOuter
     
     
     # second set of equations is assembled (one for each intervall of r) derived from eq. (13CA) with sigma_z=const.
@@ -142,13 +142,12 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     nyTestDummy2 = []
     for i, rJump in enumerate(rEnds):
         if i == 0:
-            #print("windings, len(materialWidths), i, confinementDefined", windings, len(materialWidths), i, confinementDefined) ###########################################
             riStart = rCenter                                                                               
             constant.append(s_rCenter - (1+materialRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)) 
         else:
             if confinementDefined == 1 and rJump == rEnds[-1]:
                 jNew = jConfinement
-                print("Zweites Set an Gleichungen aufgestellt und confinement beachtet")
+                print("Zweites Set an Gleichungen aufgestellt und confinement beachtet. rJump:", rJump)
             else:
                 jNew = j
             riStart = rEnds[i - 1]
@@ -158,9 +157,9 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
         icol = 3*i - 1
         col.extend([icol, icol +1, icol +2, icol +3])
         data.extend([-1, -1, 1, 1])
-        #print(materialRespectR((riStart+rJump)/2 , rArray, nyArray))
         nyTestDummy2.append(materialRespectR((riStart+rJump)/2 , rArray, nyArray))
-        if nyTestDummy[i] != materialRespectR((riStart+rJump)/2 , rArray, nyArray):
+        
+        if nyTestDummy[i] != materialRespectR((riStart+rJump)/2 , rArray, nyArray): # nur zum prüfen von ny
             print("Error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     print("first part of nyTestDummy2", nyTestDummy2[:20])
     print("last part of nyTestDummy2", nyTestDummy2[-20:])
@@ -172,20 +171,19 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     col.pop()
     data.pop()
     # add -sigma_r(r_exterior) to the constant vektor
-    constant[-1] += -s_rOuter
+    constant[-1] = constant[-1] - s_rOuter
     
     
     # third set of equations is assembled (one for each material transition) derived from u(r_i-1End) = u_(r_iStart) with sigma_z=const.
     length = len(data)
     rEndsWithoutLastEnd = rEnds[:] # [:] needed to copy the list (otherwise a reference to the original list would be assigned)
     rEndsWithoutLastEnd.pop()
-    print("len(rEnds) len(rEndsWithoutLastEnd)", len(rEnds), len(rEndsWithoutLastEnd))
     for i, rJump in enumerate(rEndsWithoutLastEnd):       # iterating over the material transitions
         if i == 0:
             riStart = rCenter
         else:
             riStart = rEnds[i - 1]
-        # two extra rows were edded if the confinement is defined
+        # two extra rows were added if the confinement is defined
         row.extend([2 * windings*len(materialWidths) + i + 2*confinementDefined, 2 * windings*len(materialWidths) + i + 2*confinementDefined, 2 * windings*len(materialWidths) + i + 2*confinementDefined])
         icol = 3*i + 1
         col.extend([icol, icol +1, icol +2])
@@ -193,22 +191,11 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
                      -materialRespectR( (rJump+riStart)/2 , rArray, nyArray) / materialRespectR( (rJump+riStart)/2, rArray, EArray)
                     + materialRespectR( (rEnds[i+1]+rJump)/2 , rArray, nyArray) / materialRespectR( (rEnds[i+1]+rJump)/2, rArray, EArray), 
                     -1/materialRespectR( (rEnds[i+1]+rJump)/2, rArray, EArray)])###################################################
-        #print(materialRespectR((riStart+rJump)/2 , rArray, nyArray))
+
         if nyTestDummy[i] != materialRespectR((riStart+rJump)/2 , rArray, nyArray): #nur zum prüfen von ny
             print("Error !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     
     constant.extend([0] * (len(rEnds) - 1))
-    
-    # for i, rJump in enumerate(rEnds):
-    #     if i != 0:                      # iterating over the material transitions ########################## Better for i, rJump in enumerate(rEnds.pop(0)): i += 1
-    #         riStart = rEnds[i - 1]
-    #         i = i - 1
-    #         row.extend([windings*len(materialWidths) - 1 + i, windings*len(materialWidths) - 1 + i, windings*len(materialWidths) - 1 + i])
-    #         icol = 3*i + 1
-    #         col.extend([icol, icol +1, icol +2])
-    #         data.extend([1, -materialRespectR( (rJump-rEnds[i])/2 ) + materialRespectR( (rEnds[i+1]-rJump)/2 ), -1])###################################################
-    # constant.extend([0] * (len(rEnds) - 1))
-    
     
     # calculate the sparse matrix
     #A = csr_matrix((data, (row, col)), shape=(3*windings*len(materialWidths) -1, 3*windings*len(materialWidths) -1), dtype=float)
@@ -224,12 +211,12 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     print("max value in row, and column", max(row), max(col))
     print("A.shape: ", A.shape)
     print("type(A): ", type(A))
-    #print(constant)
     print("len(constant): ", len(constant))
     print("type(constant): ", type(constant))
-
+    print("constant[windings*len(materialWidths) + confinementDefined - 1]", constant[windings*len(materialWidths) + confinementDefined - 1])
+    print("constant[windings*len(materialWidths)*2 + confinementDefined*2 - 2]", constant[windings*len(materialWidths)*2 + confinementDefined*2 - 1])
     print("type(A.todense()): ", type(A.todense()))
-    print("determinant: ", det(A.todense()), "equal to zero: ", det(A.todense()) == 0)
+    print("determinant: ", det(A.todense()), "equal to zero (nicht aussagekräftig): ", det(A.todense()) == 0)
     
     # plot the sparse matrix
     nonzero_values = A.data
@@ -243,13 +230,44 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     plt.gca().invert_yaxis()
     plt.xlabel("Spalte")
     plt.show()
-    
-    
+   
     Ainv = inv(A)
-    #Ainv = spsolve(A, identity) # identity is from scipy.sparse
-    result = Ainv.dot(constant)
-        
+    #plt.spy(Ainv.todense())
+    plt.show()
+    print(type(Ainv))
+    nonzero_valuesAinv = Ainv.data
+    rowAinv, colAinv = Ainv.nonzero()
     
+    plt.scatter(colAinv, rowAinv, c=nonzero_valuesAinv, cmap="brg",)
+    #plt.scatter(col, row, c=nonzero_values, cmap="turbo",)
+    plt.grid(True)
+    plt.colorbar()
+    plt.ylabel("Zeile")
+    plt.gca().invert_yaxis()
+    plt.xlabel("Spalte")
+    plt.show()
+    ####################################################################### linsolve sollte besser sein
+    result = np.linalg.solve(A.todense(), constant)
+    # print("np.linalg.cond(A)", np.linalg.cond(A.todense()))
+    # Ainv = inv(A)
+    # #Ainv = spsolve(A, identity) # identity is from scipy.sparse
+    # result = Ainv.dot(constant)
+    
+    # #Ainvinv = inv(Ainv)
+    # #print("type(Ainvinv)", type(Ainvinv))
+    # print("A und inv(inv(A)) sind gleich:", (inv(Ainv) == A).all())
+    #Adense = A.todense()
+    # test = True
+    # for i in range(0, Ainvinv.shape[0]):
+    #     for j in range(0, Ainvinv.shape[1]):
+    #         if (Ainvinv[i][j] != Adense[i][j]):
+    #             print("Element (i,j): (", i," ,", j, ") ist nicht gleich!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #             test = False
+    # print("A und inv(inv(A)) sind gleich:", test)
+    #toleranceTest = 10**(-8)
+    #print("A und inv(inv(A)) sind mit relativer tolerance= ", toleranceTest, "  fast gleich:", np.allclose(Adense, Ainvinv, rtol=toleranceTest))
+    
+    #print("inv(Ainv) == A", testInvA)
     ### Berechnen der Spannungen im innersten Torus
     # Berechne s_r
     s_rArray = (  (1/2) * result[0] * (1 - rCenter**2/rDomains[0]**2)                               
@@ -272,19 +290,31 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     e_rArray = ( 1/materialRespectR(rCenter, rArray, EArray) * ( - materialRespectR(rCenter, rArray, nyArray) * s_phiArray + s_rArray) )
     e_zArray = (-materialRespectR(rCenter, rArray, nyArray) / materialRespectR(rCenter, rArray, EArray) ) * (s_rArray + s_phiArray)
     
+    ########################################### Wie besprochen
+    resultSphiStart = result[0::3]
+    resultSphiEnd = result[1::3]
+    resultSrStart = result[2::3] # does not include the inner BC for s_rInnen
+    print(resultSphiStart[-10:])
+    print(resultSphiEnd[-10:])
+    print(resultSrStart[-10:])
+    
     for layer in range(len(rDomains) - 1):
         layer += 1
         
         if confinementDefined == 1 and layer == (len(rDomains) - 2):
-            print("Berechnen der Werte für das Confinement")
+            print("Berechnen der Werte für rDomains[-1] (mit Confinement)")
             jNew = jConfinement
         else:
             jNew = j
         
-        s_rArrayNew = (  (1/2) * result[3*layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
+        s_rArrayNew = (  (1/2) * resultSphiStart[layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
                     - ((1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
                     -  (1/rDomains[layer]**2) * (1 - (1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                    +  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
+                    +  (resultSrStart[layer-1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
+        # s_rArrayNew = (  (1/2) * result[3*layer] * (1 - rEnds[layer - 1]**2/rDomains[layer]**2) 
+        #             - ((1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) / 2) * calcIntegral(n=0, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+        #             -  (1/rDomains[layer]**2) * (1 - (1 + materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray)) /2 ) * calcIntegral(n=2, r=rDomains[layer], r_Start=rDomains[layer][0], r_Exterior=rExterior, r_Center=rCenter, j=jNew, b_za=b_za, b_zi=b_zi, b_0=b_0)
+        #             +  (result[3*layer - 1]  *  (1/2)  *  (1 + (rEnds[layer - 1]**2/rDomains[layer]**2))))
         # result[3*layer -1] = s_r,layer,Start -> last Value for layer = layers*len(materials) - 1 because range is subtracting one und one was manually added
         
         s_phiArrayNew = ( (result[3*layer] - materialRespectR( (rEnds[layer]+rEnds[layer-1])/2 , rArray, nyArray) * s_zBegin)                          +  materialRespectR( (rEnds[layer]+rEnds[layer-1])/2, rArray, nyArray) * s_z  
@@ -308,6 +338,8 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
         e_rArray = np.append(e_rArray, e_rArrayNew)
         e_phiArray = np.append(e_phiArray, e_phiArrayNew)
         e_zArray = np.append(e_zArray, e_zArrayNew)
+    
+    
     
     return s_rArray, s_phiArray, u_rArray, e_rArray, e_phiArray, e_zArray
     
@@ -436,21 +468,25 @@ u_rCaldwell =  calcDisplacement(np.concatenate(rDomFlattened, axis=None).ravel()
 # E(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
 plt.plot(rDomFlattened , E, label="vorgegebenes E(r)")
-plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
-plt.ylabel(f"E-Modul in N/(m E{int(np.log10(mSkalierung))})^2")
+plt.xlabel(f"Radius in m")
+plt.ylabel(f"E-Modul in N/(m)^2")
 
 # ny(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 1)
 plt.plot(rDomFlattened , Ny, label="vorgegebenes ny(r)")
-plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
+plt.xlabel("Radius in m")
 plt.ylabel("ny in 1")
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 plt.grid(True)
 plt.plot(rDomFlattened, s_r)
+plt.xlabel("Radius in m")
+plt.ylabel("s_r in Pa")
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 plt.grid(True)
 plt.plot(rDomFlattened, s_phi)
+plt.xlabel("Radius in m")
+plt.ylabel("s_phi in Pa")
 
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
@@ -459,16 +495,16 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
 plt.plot(rDomFlattened, u_rAnalytical, label="u_r analytisch berechnet")
 #plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
 plt.plot(rDomFlattened, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
-plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
-plt.ylabel(f"u_r in m E{int(np.log10(mSkalierung))}")
+plt.xlabel(f"Radius in m")
+plt.ylabel(f"u_r in m")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
 plt.plot(rDomFlattened, e_rAnalytical, label="e_r analytisch berechnet")
 #plt.plot(r, e_rCaldwell * mSkalierung**(-1), "b", label="e_r berechnet über Caldwell")
 #plt.plot(r, e_rDerivative, label=f"e_r berechnet über BVP mit analytischer Ableitung\ne_ri={round(e_rDerivative[0], 6)}; e_ra={round(e_rDerivative[-1], 6)}")
-plt.xlabel(f"Radius in m E{int(np.log10(mSkalierung))}")
-plt.ylabel(f"e_r in [-] E{int(np.log10(mSkalierung))}")
+plt.xlabel(f"Radius in m")
+plt.ylabel(f"e_r in [-]")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
