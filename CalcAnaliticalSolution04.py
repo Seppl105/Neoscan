@@ -3,13 +3,13 @@ import numpy as np
 from scipy.sparse import *
 from scipy.sparse.linalg import inv
 from scipy.linalg import det
-from functions.Hoopstress_Calc02Copy import calcStresses
+#from functions.Hoopstress_Calc02Copy import calcStresses
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
 
 #####   Defintion der Konstanten Werte
-windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 totalWindings = int(600/windingDivisor)
 
@@ -368,15 +368,41 @@ def materialRespectR(r, rArray, materialArray):
     return np.interp(r, rArray, materialArray)
 
 
+    
+def calcStresses(r, r_a, r_i, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
+    ### Berechne s_z
+    s_z = s_z0  # from eq (4)
+    
+    ### Berechne s_phii
+    s_phii = (  2 / (1 - (r_i**2/r_a**2))  ) * ( s_ra  +  ((1 + nu) / 2) * calcIntegral(n=0, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                                                +  (1/r_a**2) * (1 - (1 + nu)/2 ) * calcIntegral(n=2, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                                                -  (s_ri  *  (1/2)  *  (1 + (r_i**2/r_a**2))))
+    #print("s_phii: ", s_phii)
+    #print("Term 1: ", s_ra  +  ((1 + nu) / 2) * calcIntegral(0, r_a, r_a, r_i, j, b_za, b_zi, b_0), 
+    #      "\nTerm 2: ", +  (1/r_a**2) * (1 - (1 + nu)/2 ) * calcIntegral(2,r_a, r_a, r_i, j, b_za, b_zi, b_0),
+    #      "\nTerm 3: ",  -  (s_ri  *  (1/2)  *  (1 + (r_i**2/r_a**2))))
+    
+    ###Berechne s_r(r)
+    s_rArray = (  (1/2) * s_phii * (1 - r_i**2/r**2) 
+                - ((1 + nu) / 2) * calcIntegral(n=0, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                -  (1/r**2) * (1 - (1 + nu)/2 ) * calcIntegral(n=2, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                +  (s_ri  *  (1/2)  *  (1 + (r_i**2/r**2))))
+    #print("s_rArray: ", s_rArray[0:5])
+    
+    ### Berechne s_phi
+    s_phiArray = ( (s_phii - nu * s_z0)  
+                 +  nu * s_z  
+                 -  (nu + 1) * calcIntegral(n=0, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                 + s_ri
+                 - s_rArray )
+    
+    return[s_rArray, s_phiArray]
+
+
 def calcDisplacementCaldwell(r, s_r, s_phi, E, ny):
     # used to calculate the displacement and strain according to caldwell
-    #print(type(E), type(ny), type(s_r), type(s_phi), type(r))
-    #print(np.size(E), np.size(ny), np.size(s_r), np.size(s_phi), np.size(r))
     u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
-    #print("ccccccccc")
     e_r = 1/E * (s_r - ny * s_phi)
-    #e_r = r
-    #print("test2")
     return([u_r, e_r])
 
 
@@ -450,6 +476,21 @@ plt.xlabel("Radius in m")
 plt.ylabel("s_phi in Pa")
 
 
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
+plt.plot(rDomFlattened, e_rAnalytical, label="e_r analytisch berechnet")
+#plt.plot(r, e_rCaldwell * mSkalierung**(-1), "b", label="e_r berechnet über Caldwell")
+#plt.plot(r, e_rDerivative, label=f"e_r berechnet über BVP mit analytischer Ableitung\ne_ri={round(e_rDerivative[0], 6)}; e_ra={round(e_rDerivative[-1], 6)}")
+plt.xlabel(f"Radius in m")
+plt.ylabel(f"e_r in [-]")
+plt.legend()
+
+plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
+#plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytisch berechnet")
+#plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
+plt.ylabel("e_phi in [-]")
+plt.legend()
+
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
 #u_rFourierFunction = calcDisplacement(r, s_rSolBvpFourier, s_phiSolBvpFourier, fourierFunctionE_f(r), fourierFunctionNy_f(r))[0]
 #plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
@@ -460,22 +501,7 @@ plt.xlabel(f"Radius in m")
 plt.ylabel(f"u_r in m")
 plt.legend()
 
-plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
-plt.plot(rDomFlattened, e_rAnalytical, label="e_r analytisch berechnet")
-#plt.plot(r, e_rCaldwell * mSkalierung**(-1), "b", label="e_r berechnet über Caldwell")
-#plt.plot(r, e_rDerivative, label=f"e_r berechnet über BVP mit analytischer Ableitung\ne_ri={round(e_rDerivative[0], 6)}; e_ra={round(e_rDerivative[-1], 6)}")
-plt.xlabel(f"Radius in m")
-plt.ylabel(f"e_r in [-]")
-plt.legend()
-
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 4)
-#plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
-plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytisch berechnet")
-#plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
-plt.ylabel("e_phi in [-]")
-plt.legend()
-
-plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
 plt.plot(rDomFlattened, e_zAnalytical, label="e_z analytisch berechnet")
 #plt.plot(r, e_zCaldwell * mSkalierung**(-1), "b", label="e_z berechnet über Caldwell")
 #plt.plot(r, e_zDerivative, label=f"e_z berechnet über BVP mit analytischer Ableitung\ne_zi={round(e_zDerivative[0], 6)}; e_za={round(e_zDerivative[-1], 6)}")
