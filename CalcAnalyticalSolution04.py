@@ -369,7 +369,7 @@ def materialRespectR(r, rArray, materialArray):
 
 
     
-def calcStresses(r, r_a, r_i, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
+def calcStressesCaldwell(r, r_a, r_i, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
     ### Berechne s_z
     s_z = s_z0  # from eq (4)
     
@@ -448,8 +448,8 @@ s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcA
 
 ### Berechnen der Verschiebungen
 s_z = s_z0 # aus Impulsbilanz in z-Richtung
-u_rCaldwell =  calcDisplacementCaldwell(np.concatenate(rDomFlattened, axis=None).ravel(), calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],
-                                calcStresses(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1],
+u_rCaldwell =  calcDisplacementCaldwell(np.concatenate(rDomFlattened, axis=None).ravel(), calcStressesCaldwell(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],
+                                calcStressesCaldwell(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1],
                                 materialEs[0], materialNys[0])[0]
 
 # E(r)
@@ -485,7 +485,7 @@ plt.ylabel(f"e_r in [-]")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
-#plt.plot(r, 1/r * mSkalierung**(-2) * calcStresses(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+#plt.plot(r, 1/r * mSkalierung**(-2) * calcStressesCaldwell(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
 plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytisch berechnet")
 #plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
 plt.ylabel("e_phi in [-]")
