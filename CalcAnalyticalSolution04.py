@@ -3,13 +3,13 @@ import numpy as np
 from scipy.sparse import *
 from scipy.sparse.linalg import inv
 from scipy.linalg import det
-#from functions.Hoopstress_Calc02Copy import calcStresses
+from functions.Hoopstress_Calc02Copy import calcStresses
 from datetime import datetime # Nur für die Bennenung der Grafiken
 
 roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
 
 #####   Defintion der Konstanten Werte
-windingDivisor = 1       # Es wird für 600/windingDivisor Windungen gerechnet
+windingDivisor = 10       # Es wird für 600/windingDivisor Windungen gerechnet
 numberOfValues = int(3000000 / windingDivisor) # Anzahl der Werte des r Vektors
 totalWindings = int(600/windingDivisor)
 
@@ -30,9 +30,9 @@ t_ins = 0.01 * 10**(-3) # [m] Dicke der Isolation
 t = t_con + t_cow + t_ins             # [m] Dicke einer Wicklung (Conductor, Cowinding, Insulation)
 materialWidths = [t_con, t_cow, t_ins]
 
-E_con = 280 * 10**9 # [Pa] E-Modul des Conductors
-E_cow = 300 * 10**9 # [Pa] E-Modul des Cowindings
-E_ins = 200 * 10**9 # [Pa] E-Modul der Insulation
+E_con = 500 * 10**9#280 * 10**9 # [Pa] E-Modul des Conductors
+E_cow = 450 * 10**9#300 * 10**9 # [Pa] E-Modul des Cowindings
+E_ins = 400 * 10**9#200 * 10**9 # [Pa] E-Modul der Insulation
 materialEs = [E_con, E_cow, E_ins]
 
 ny_con = 0.35 # Possion's Ratio Conductor
@@ -40,8 +40,18 @@ ny_cow = 0.3  # Possion's Ratio Cowinding
 ny_ins = 0.4  # Possion's Ratio Insulation
 materialNys = [ny_con, ny_cow, ny_ins]
 
+# Caldwell rechnet mit aus dem Leiterband gemittelten Materialparametern
+ECaldwell = 0
+nyCaldwell = 0
+for i, width in enumerate(materialWidths):
+    ECaldwell += width * materialEs[i]
+    nyCaldwell += width * materialNys[i]
+ECaldwell = ECaldwell / sum(materialWidths)
+nyCaldwell = nyCaldwell / sum(materialWidths)
+
+
 #   Materialparameter des Confinements
-t_confinement = -1#0.0005       # [m] Dicke des Confinements (für "-1" wird ohne Confinement gerechnet)
+t_confinement = 0.010       # [m] Dicke des Confinements (für "-1" wird ohne Confinement gerechnet)
 E_confinement = E_con        # [Pa] E-Modul des Confinements
 ny_confinement = ny_con      # Possions's Ratio des Confinements
 
@@ -86,6 +96,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     # if confinement is defined some parts of the calculation have to be adadpted
     # wheater the calculation has to be adapted is controled with the variable "confinementDefined"
     jConfinement = 0
+    testVerschiebungConfinementNachInnen = 0 # Möglichkeit das Confinement als Innere Layer einzubringen
     confinementDefined = 0
     if len(rDomains) != windings*len(materialWidths):
         confinementDefined = 1
@@ -112,7 +123,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
             constant.append(cA(rJump, riStart) * s_rCenter + c(rJump, riStart, materialRespectR( (riStart+rJump)/2 , rArray, nyArray), j)) 
         else:
             riStart = rEnds[i - 1]
-            if confinementDefined == 1 and rJump == rEnds[-1]:
+            if confinementDefined == 1 and rJump == rEnds[-1 - testVerschiebungConfinementNachInnen]:
                 jNew = jConfinement
                 print("Erstes Set an Gleichungen aufgestellt und Confinement beachtet. rJump:", rJump)
             else:
@@ -146,7 +157,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
             riStart = rCenter                                                                               
             constant.append(s_rCenter - (1+materialRespectR( (riStart+rJump)/2 , rArray, nyArray)) * calcIntegral(n=0, r=rJump, r_Start=riStart, r_Exterior=rExterior, r_Center=rCenter, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)) 
         else:
-            if confinementDefined == 1 and rJump == rEnds[-1]:
+            if confinementDefined == 1 and rJump == rEnds[-1- testVerschiebungConfinementNachInnen]:
                 jNew = jConfinement
                 print("Zweites Set an Gleichungen aufgestellt und confinement beachtet. rJump:", rJump)
             else:
@@ -292,7 +303,7 @@ def calcAnaliticalSolution(rDomains, rCenter, rExterior, s_rCenter, s_rOuter, s_
     for layer in range(len(rDomains) - 1):
         layer += 1
         
-        if confinementDefined == 1 and layer == (len(rDomains) - 2):
+        if confinementDefined == 1 and layer == (len(rDomains) - 1 - testVerschiebungConfinementNachInnen):
             print("Berechnen der Werte für rDomains[-1] (mit Confinement)")
             jNew = jConfinement
         else:
@@ -384,15 +395,15 @@ def calcStressesCaldwell(r, r_a, r_i, s_z0, s_ra, s_ri, nu, b_za, b_zi, b_0, j):
     
     ###Berechne s_r(r)
     s_rArray = (  (1/2) * s_phii * (1 - r_i**2/r**2) 
-                - ((1 + nu) / 2) * calcIntegral(n=0, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
-                -  (1/r**2) * (1 - (1 + nu)/2 ) * calcIntegral(n=2, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                - ((1 + nu) / 2) * calcIntegral(n=0, r=r, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                -  (1/r**2) * (1 - (1 + nu)/2 ) * calcIntegral(n=2, r=r, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
                 +  (s_ri  *  (1/2)  *  (1 + (r_i**2/r**2))))
     #print("s_rArray: ", s_rArray[0:5])
     
     ### Berechne s_phi
     s_phiArray = ( (s_phii - nu * s_z0)  
                  +  nu * s_z  
-                 -  (nu + 1) * calcIntegral(n=0, r=r_a, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
+                 -  (nu + 1) * calcIntegral(n=0, r=r, r_Start=r_i, r_Exterior=r_a, r_Center=r_i, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
                  + s_ri
                  - s_rArray )
     
@@ -403,7 +414,9 @@ def calcDisplacementCaldwell(r, s_r, s_phi, E, ny):
     # used to calculate the displacement and strain according to caldwell
     u_r = ( 1/E * (-ny * s_r + s_phi) ) * r
     e_r = 1/E * (s_r - ny * s_phi)
-    return([u_r, e_r])
+    e_phi = 1/E * (-ny * s_r + s_phi)
+    e_z = -ny/E * (s_r + s_phi)
+    return([u_r, e_r, e_phi, e_z])
 
 
 ######################################################################################
@@ -432,7 +445,7 @@ if t_confinement != -1:
     E = np.append(E[:-1], np.ones_like(r_confinement) * E_confinement, axis=0)
 
 
-rDomFlattened = np.concatenate(rDom, axis=None).ravel()
+rDomFlattened = np.concatenate(rDom, axis=None)
 
 
 print("size of rDomFlattened: ", rDomFlattened.size)
@@ -446,47 +459,56 @@ print("E: ", E)
 
 s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rOuter=0, s_zBegin=0, windings=totalWindings, nyArray=Ny, EArray=E, materialWidths=materialWidths, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
 
-### Berechnen der Verschiebungen
-s_z = s_z0 # aus Impulsbilanz in z-Richtung
-u_rCaldwell =  calcDisplacementCaldwell(np.concatenate(rDomFlattened, axis=None).ravel(), calcStressesCaldwell(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[0],
-                                calcStressesCaldwell(r=rDomFlattened, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=Ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)[1],
-                                materialEs[0], materialNys[0])[0]
+### Berechnungen für Caldwell
+rDomFlattenedCaldwell = np.concatenate(rDom[:-1], axis=None)
+s_zCaldwell = s_z0 # aus Impulsbilanz in z-Richtung
+s_rCaldwell, s_phiCaldwell = calcStressesCaldwell(r=rDomFlattenedCaldwell, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=nyCaldwell, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)
+u_rCaldwell, e_rCaldwell, e_phiCaldwell, e_zCaldwell =  calcDisplacementCaldwell(r=rDomFlattenedCaldwell, s_r=s_rCaldwell, s_phi=s_phiCaldwell, E=ECaldwell, ny=nyCaldwell)
 
 # E(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 1)
 plt.plot(rDomFlattened , E, label="vorgegebenes E(r)")
+plt.plot(rDomFlattenedCaldwell, [ECaldwell] * len(rDomFlattenedCaldwell), label="gemitteltes E für Caldwell")
 plt.xlabel(f"Radius in m")
 plt.ylabel(f"E-Modul in N/(m)^2")
+plt.legend()
 
 # ny(r)
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 1)
 plt.plot(rDomFlattened , Ny, label="vorgegebenes ny(r)")
+plt.plot(rDomFlattenedCaldwell, [nyCaldwell] * len(rDomFlattenedCaldwell), label="gemitteltes ny für Caldwell")
 plt.xlabel("Radius in m")
 plt.ylabel("ny in 1")
+plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 2)
 plt.grid(True)
-plt.plot(rDomFlattened, s_r)
+plt.plot(rDomFlattened, s_r, label="s_r analytische Lösung")
+plt.plot(rDomFlattenedCaldwell, s_rCaldwell, label="s_r nach Caldwell")
 plt.xlabel("Radius in m")
 plt.ylabel("s_r in Pa")
+plt.legend()
+
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 2)
 plt.grid(True)
-plt.plot(rDomFlattened, s_phi)
+plt.plot(rDomFlattened, s_phi, label="s_phi analytische Lösung")
+plt.plot(rDomFlattenedCaldwell, s_phiCaldwell, label="s_phi nach Caldwell")
 plt.xlabel("Radius in m")
 plt.ylabel("s_phi in Pa")
-
+plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 3)
-plt.plot(rDomFlattened, e_rAnalytical, label="e_r analytisch berechnet")
-#plt.plot(r, e_rCaldwell * mSkalierung**(-1), "b", label="e_r berechnet über Caldwell")
+plt.plot(rDomFlattened, e_rAnalytical, label="e_r analytische Lösung")
+plt.plot(rDomFlattenedCaldwell, e_rCaldwell, label="e_r berechnet nach Caldwell")
 #plt.plot(r, e_rDerivative, label=f"e_r berechnet über BVP mit analytischer Ableitung\ne_ri={round(e_rDerivative[0], 6)}; e_ra={round(e_rDerivative[-1], 6)}")
 plt.xlabel(f"Radius in m")
 plt.ylabel(f"e_r in [-]")
 plt.legend()
 
 plt.subplot(anzahlRowPlots, anzahlColumnPlots, 4)
-#plt.plot(r, 1/r * mSkalierung**(-2) * calcStressesCaldwell(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=ny[0], b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
-plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytisch berechnet")
+#plt.plot(r, 1/r * mSkalierung**(-2) * calcStressesCaldwell(r=r * mSkalierung**(-1), r_a=r_a * mSkalierung**(-1), r_i=r_i * mSkalierung**(-1), s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=nyCaldwell, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j * mSkalierung**2)[1], label="e_phi nach Caldwell")
+plt.plot(rDomFlattened, e_phiAnalytical, label="e_phi analytische Lösung")
+plt.plot(rDomFlattenedCaldwell, e_phiCaldwell, label="e_phi nach Caldwell")
 #plt.plot(r, 1/r * s_phiSolBvpDerivativeTanh * mSkalierung**(-1), "--", label="e_phi berechnet als BVP mit analytischer Ableitung")
 plt.ylabel("e_phi in [-]")
 plt.legend()
@@ -496,7 +518,7 @@ plt.subplot(anzahlRowPlots, anzahlColumnPlots, anzahlColumnPlots + 3)
 #plt.plot(r, u_rFourierFunction, color="orange", label="u_r berechnet über BVP mit Fourierreihe",)
 plt.plot(rDomFlattened, u_rAnalytical, label="u_r analytisch berechnet")
 #plt.plot(r, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
-plt.plot(rDomFlattened, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
+plt.plot(rDomFlattenedCaldwell, u_rCaldwell, "b", label="u_r berechnet über Caldwell")
 plt.xlabel(f"Radius in m")
 plt.ylabel(f"u_r in m")
 plt.legend()
