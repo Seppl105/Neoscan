@@ -460,7 +460,14 @@ print("E: ", E)
 s_r, s_phi, u_rAnalytical, e_rAnalytical, e_phiAnalytical, e_zAnalytical = calcAnaliticalSolution(rDomains=rDom, rCenter=r_i, rExterior=r_a, s_rCenter=0, s_rOuter=0, s_zBegin=0, windings=totalWindings, nyArray=Ny, EArray=E, materialWidths=materialWidths, j=j, b_za=b_za, b_zi=b_zi, b_0=b_0)
 
 ### Berechnungen für Caldwell
-rDomFlattenedCaldwell = np.concatenate(rDom[:-1], axis=None)
+# unterschiedlicher r-Vektor je nach dem ob das Confinement definiert wurde
+if len(rDom) != totalWindings*len(materialWidths):
+    # Confinement ist definiert, muss also aus dem r-Vektor zur Berechnung der Lösung von Caldwell entfernt werden
+    rDomFlattenedCaldwell = np.concatenate(rDom[:-1], axis=None)
+else:
+    # Confinement ist nicht definiert, es kann also der selbe r-Vektor zur Berechnung der Lösung nach Caldwell genutzt werden
+    rDomFlattenedCaldwell = rDomFlattened
+    
 s_zCaldwell = s_z0 # aus Impulsbilanz in z-Richtung
 s_rCaldwell, s_phiCaldwell = calcStressesCaldwell(r=rDomFlattenedCaldwell, r_a=r_a, r_i=r_i, s_z0=s_z0, s_ri=s_ri, s_ra=s_ra, nu=nyCaldwell, b_za=b_za, b_zi=b_zi, b_0=b_0, j=j)
 u_rCaldwell, e_rCaldwell, e_phiCaldwell, e_zCaldwell =  calcDisplacementCaldwell(r=rDomFlattenedCaldwell, s_r=s_rCaldwell, s_phi=s_phiCaldwell, E=ECaldwell, ny=nyCaldwell)

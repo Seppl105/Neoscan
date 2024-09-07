@@ -1,0 +1,334 @@
+1
+
+   Abaqus 2020                                  Date 07-Sep-2024   Time 02:47:24
+   For use by TECHNISCHE UNIVERSITAET BERLIN under license from Dassault Systemes or its subsidiary.
+
+
+
+                         The Abaqus Software is a product of:
+
+                           Dassault Systemes SIMULIA Corp.
+                           1301 Atwood Avenue, Suite 101W
+                              Johnston, RI 02919, USA
+ 
+
+
+                   The Abaqus Software is available only under license
+                   from Dassault Systemes or its subsidiary and may be
+                   used or reproduced only in accordance with the terms
+                   of such license.
+ 
+                          On machine Maze 
+                          you are authorized to run
+                          Abaqus/Standard until 31-Jan-2025
+
+                          Your site id is: 200000000017314 
+
+
+ 
+                    For assistance or any other information you may
+                    obtain contact information for your local office
+                    from the world wide web at:
+
+                      http://www.3ds.com/products/simulia/locations/
+
+ 
+                * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+                *                                                         * 
+                *                   *****************                     * 
+                *                   *  N O T I C E  *                     * 
+                *                   *****************                     * 
+                *                                                         * 
+                *                                                         * 
+                *                       Abaqus 2020                       * 
+                *                                                         * 
+                *          BUILD ID: 2019_09_13-19.49.31 163176           * 
+                *                                                         * 
+                *                                                         * 
+                *  Please make sure you are using                         * 
+                *  release Abaqus 2020 manuals                            * 
+                *  plus the notes accompanying this release.              * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *                                                         * 
+                *   This program may not be used for commercial purposes  * 
+                *           without payment of a commercial fee.          * 
+                *                                                         * 
+                * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+
+ 
+
+
+
+     PROCESSING PART, INSTANCE, AND ASSEMBLY INFORMATION
+   *******************************************************
+
+
+     END PROCESSING PART, INSTANCE, AND ASSEMBLY INFORMATION
+   ***********************************************************
+
+
+
+
+     OPTIONS BEING PROCESSED
+   ***************************
+
+
+  *Heading
+  *Node
+  *Element, type=CAX4R
+  *Nset, nset=ASSEMBLY_PART-1-1__PICKEDSET2
+  *Elset, elset=ASSEMBLY_PART-1-1__PICKEDSET2
+  *Node
+  *Element, type=CAX4R
+  *Nset, nset=ASSEMBLY_PART-2-1__PICKEDSET3
+  *Elset, elset=ASSEMBLY_PART-2-1__PICKEDSET3
+  *Nset, nset=ASSEMBLY__PICKEDSET20
+  *Nset, nset=ASSEMBLY__PICKEDSET22
+  *Nset, nset=ASSEMBLY__PICKEDSET23
+  *Nset, nset=ASSEMBLY__PICKEDSET28
+  *Nset, nset=ASSEMBLY__PICKEDSET30
+  *Nset, nset=ASSEMBLY__PICKEDSET31
+  *Nset, nset=ASSEMBLY__PICKEDSET32
+  *Nset, nset=ASSEMBLY__PICKEDSET6
+  *Elset, elset=ASSEMBLY__PICKEDSET22
+  *Elset, elset=ASSEMBLY__PICKEDSET23
+  *Elset, elset=ASSEMBLY__PICKEDSET28
+  *Elset, elset=ASSEMBLY__PICKEDSET30
+  *Elset, elset=ASSEMBLY__PICKEDSET31
+  *Elset, elset=ASSEMBLY__PICKEDSET32
+  *Elset, elset=ASSEMBLY__PICKEDSET6
+  *material, name=MATERIAL-2
+  *density
+  *elastic
+  *material, name=MATERIAL-CON
+  *density
+  *elastic
+  *solidsection, elset=ASSEMBLY_PART-1-1__PICKEDSET2, material=MATERIAL-CON
+  *solidsection, elset=ASSEMBLY_PART-2-1__PICKEDSET3, material=MATERIAL-2
+  *solidsection, elset=ASSEMBLY_PART-1-1__PICKEDSET2, material=MATERIAL-CON
+  *solidsection, elset=ASSEMBLY_PART-2-1__PICKEDSET3, material=MATERIAL-2
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET31_CNS_
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET32_CNS_
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET31_CNS_
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET32_CNS_
+  *surfaceinteraction, name=INTPROP-1
+  *surfacebehavior, pressure-overclosure=HARD
+  *contact
+  *contactinclusions, allexterior
+  *contactpropertyassignment
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *surfaceinteraction, name=INTPROP-1
+  *friction, sliptolerance=0.005
+  *surfacebehavior, pressure-overclosure=HARD
+  *surfaceinteraction, name=INTPROP-1
+  *boundary
+  *boundary
+  *boundary
+  *boundary
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+
+ ***WARNING: SLAVE SURFACE ASSEMBLY__PICKEDSET32_CNS_ IS A NODE-BASED SURFACE 
+             USED WITH SURFACE TO SURFACE APPROACH.  IN ORDER TO OBTAIN 
+             IMPROVED STRESS ACCURACY WITH THIS APPROACH, AN ELEMENT-BASED 
+             SURFACE SHOULD BE USED INSTEAD.
+
+ ***WARNING: FOR *TIE PAIR 
+             (ASSEMBLY__PICKEDSET32_CNS_-ASSEMBLY__PICKEDSET31_CNS_), 
+             ADJUSTMENT WAS SPECIFIED BUT NO NODE WAS ADJUSTED MORE THAN THE 
+             ADJUSTMENT DISTANCE = 2.22000E-16.
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+
+ ***WARNING: SLAVE NODE 2 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 3 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 4 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 5 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 6 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 7 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 8 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 9 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 10 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 11 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***WARNING: SLAVE NODE 12 INSTANCE PART-2-1 WILL NOT BE TIED TO THE MASTER 
+             SURFACE ASSEMBLY__PICKEDSET31_CNS_. THE DISTANCE FROM THE MASTER 
+             SURFACE IS GREATER THAN THE POSITION TOLERANCE VALUE.
+
+ ***NOTE: THE ABOVE WARNING MESSAGE IS BEING SUPPRESSED DUE TO EXCESSIVE 
+          REPORTING.
+  *surfaceinteraction, name=INTPROP-1
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET31_CNS_
+  *surface, type=NODE, name=ASSEMBLY__PICKEDSET32_CNS_
+  *tie, name=ASSEMBLY_CONSTRAINT-1, adjust=YES
+  *output, field, variable=PRESELECT
+  *output, history, variable=PRESELECT
+  *output, field, variable=PRESELECT
+  *output, history, variable=PRESELECT
+
+ ***WARNING: 20769 nodes are either missing intersection with their respective 
+             master surface or are outside the adjust zone. The nodes have been 
+             identified in node set WarnNodeMissMasterIntersect.
+  *output, field, variable=PRESELECT
+  *output, history, variable=PRESELECT
+  *Step, name=Step-1, nlgeom=NO
+  *output, field, variable=PRESELECT
+  *output, history, variable=PRESELECT
+  *Step, name=Step-1, nlgeom=NO
+  *Step, name=Step-1, nlgeom=NO
+  *static
+  *dload
+  *output, field, variable=PRESELECT
+  *output, history, variable=PRESELECT
+  *endstep
+  *boundary
+  *boundary
+  *Step, name=Step-1, nlgeom=NO
+  *static
+  *endstep
+
+ ***WARNING: DEGREE OF FREEDOM 2 IS NOT ACTIVE ON NODE 1 INSTANCE PART-2-1 - 
+             THIS BOUNDARY CONDITION IS IGNORED
+
+ ***NOTE: Boundary conditions are specified on inactive dof of 1 nodes. The 
+          nodes have been identified in node set WarnNodeBCInactiveDof.
+
+
+
+                            P R O B L E M   S I Z E
+
+
+          NUMBER OF ELEMENTS IS                                 34320
+          NUMBER OF ELEMENTS DEFINED BY THE USER AND *TIE       31500
+          NUMBER OF INTERNAL ELEMENTS GENERATED FOR CONTACT      2820
+          NUMBER OF NODES IS                                    37847
+          NUMBER OF NODES DEFINED BY THE USER                   32207
+          NUMBER OF INTERNAL NODES GENERATED BY THE PROGRAM      5640
+          TOTAL NUMBER OF VARIABLES IN THE MODEL                70054
+          (DEGREES OF FREEDOM PLUS MAX NO. OF ANY LAGRANGE MULTIPLIER
+           VARIABLES. INCLUDE *PRINT,SOLVE=YES TO GET THE ACTUAL NUMBER.)
+
+
+
+                              END OF USER INPUT PROCESSING
+
+
+
+     JOB TIME SUMMARY
+       USER TIME (SEC)      =   1.8000    
+       SYSTEM TIME (SEC)    =  0.50000    
+       TOTAL CPU TIME (SEC) =   2.3000    
+       WALLCLOCK TIME (SEC) =          5
+1
+
+   Abaqus 2020                                  Date 07-Sep-2024   Time 02:47:33
+   For use by TECHNISCHE UNIVERSITAET BERLIN under license from Dassault Systemes or its subsidiary.
+
+                                                                                               STEP    1  INCREMENT    1
+                                                                                          TIME COMPLETED IN THIS STEP   0.00    
+
+
+                        S T E P       1     S T A T I C   A N A L Y S I S
+
+
+                                                                                          
+
+     AUTOMATIC TIME CONTROL WITH -
+          A SUGGESTED INITIAL TIME INCREMENT OF                 1.00    
+          AND A TOTAL TIME PERIOD OF                            1.00    
+          THE MINIMUM TIME INCREMENT ALLOWED IS                1.000E-05
+          THE MAXIMUM TIME INCREMENT ALLOWED IS                 1.00    
+
+     LINEAR EQUATION SOLVER TYPE         DIRECT SPARSE
+
+          UNSYMMETRIC MATRIX STORAGE AND SOLUTION WILL BE USED
+  
+                   M E M O R Y   E S T I M A T E
+  
+ PROCESS      FLOATING PT       MINIMUM MEMORY        MEMORY TO
+              OPERATIONS           REQUIRED          MINIMIZE I/O
+             PER ITERATION           (MB)               (MB)
+  
+     1          1.46E+09               47                172
+  
+ NOTE:
+      (1) SINCE ABAQUS DOES NOT PRE-ALLOCATE MEMORY AND ONLY ALLOCATES MEMORY AS NEEDED DURING THE ANALYSIS,
+          THE MEMORY REQUIREMENT PRINTED HERE CAN ONLY BE VIEWED AS A GENERAL GUIDELINE BASED ON THE BEST
+          KNOWLEDGE AVAILABLE AT THE BEGINNING OF A STEP BEFORE THE SOLUTION PROCESS HAS BEGUN.
+      (2) THE ESTIMATE IS NORMALLY UPDATED AT THE BEGINNING OF EVERY STEP. IT IS THE MAXIMUM VALUE OF THE
+          ESTIMATE FROM THE CURRENT STEP TO THE LAST STEP OF THE ANALYSIS, WITH UNSYMMETRIC SOLUTION TAKEN
+          INTO ACCOUNT IF APPLICABLE. 
+      (3) SINCE THE ESTIMATE IS BASED ON THE ACTIVE DEGREES OF FREEDOM IN THE FIRST ITERATION OF THE 
+          CURRENT STEP, THE MEMORY ESTIMATE MIGHT BE SIGNIFICANTLY DIFFERENT THAN ACTUAL USAGE FOR 
+          PROBLEMS WITH SUBSTANTIAL CHANGES IN ACTIVE DEGREES OF FREEDOM BETWEEN STEPS (OR EVEN WITHIN
+          THE SAME STEP). EXAMPLES ARE: PROBLEMS WITH SIGNIFICANT CONTACT CHANGES, PROBLEMS WITH MODEL
+          CHANGE, PROBLEMS WITH BOTH STATIC STEP AND STEADY STATE DYNAMIC PROCEDURES WHERE ACOUSTIC 
+          ELEMENTS WILL ONLY BE ACTIVATED IN THE STEADY STATE DYNAMIC STEPS.
+      (4) FOR MULTI-PROCESS EXECUTION, THE ESTIMATED VALUE OF FLOATING POINT OPERATIONS FOR EACH PROCESS
+          IS BASED ON AN INITIAL SCHEDULING OF OPERATIONS AND MIGHT NOT REFLECT THE ACTUAL FLOATING 
+          POINT OPERATIONS COMPLETED ON EACH PROCESS. OPERATIONS ARE DYNAMICALLY BALANCED DURING EXECUTION, 
+          SO THE ACTUAL BALANCE OF OPERATIONS BETWEEN PROCESSES IS EXPECTED TO BE BETTER THAN THE ESTIMATE
+          PRINTED HERE.
+      (5) THE UPPER LIMIT OF MEMORY THAT CAN BE ALLOCATED BY ABAQUS WILL IN GENERAL DEPEND ON THE VALUE OF
+          THE "MEMORY" PARAMETER AND THE AMOUNT OF PHYSICAL MEMORY AVAILABLE ON THE MACHINE. PLEASE SEE
+          THE "ABAQUS ANALYSIS USER'S MANUAL" FOR MORE DETAILS. THE ACTUAL USAGE OF MEMORY AND OF DISK
+          SPACE FOR SCRATCH DATA WILL DEPEND ON THIS UPPER LIMIT AS WELL AS THE MEMORY REQUIRED TO MINIMIZE
+          I/O. IF THE MEMORY UPPER LIMIT IS GREATER THAN THE MEMORY REQUIRED TO MINIMIZE I/O, THEN THE ACTUAL
+          MEMORY USAGE WILL BE CLOSE TO THE ESTIMATED "MEMORY TO MINIMIZE I/O" VALUE, AND THE SCRATCH DISK
+          USAGE WILL BE CLOSE-TO-ZERO; OTHERWISE, THE ACTUAL MEMORY USED WILL BE CLOSE TO THE PREVIOUSLY
+          MENTIONED MEMORY LIMIT, AND THE SCRATCH DISK USAGE WILL BE ROUGHLY PROPORTIONAL TO THE DIFFERENCE
+          BETWEEN THE ESTIMATED "MEMORY TO MINIMIZE I/O" AND THE MEMORY UPPER LIMIT. HOWEVER ACCURATE
+          ESTIMATE OF THE SCRATCH DISK SPACE IS NOT POSSIBLE.
+      (6) USING "*RESTART, WRITE" CAN GENERATE A LARGE AMOUNT OF DATA WRITTEN IN THE WORK DIRECTORY.
+
+
+          THE ANALYSIS HAS BEEN COMPLETED
+
+
+
+                              ANALYSIS COMPLETE
+                              WITH     15 WARNING MESSAGES ON THE DAT FILE
+                              AND       4 WARNING MESSAGES ON THE MSG FILE
+
+
+
+     JOB TIME SUMMARY
+       USER TIME (SEC)      =   12.000    
+       SYSTEM TIME (SEC)    =  0.50000    
+       TOTAL CPU TIME (SEC) =   12.500    
+       WALLCLOCK TIME (SEC) =         26

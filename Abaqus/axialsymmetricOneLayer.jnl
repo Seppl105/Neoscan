@@ -1,0 +1,520 @@
+# Save by SGnir on 2024_09_07-01.10.42; build 2020 2019_09_13-19.49.31 163176
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].ConstrainedSketch(name='__profile__', sheetSize=1.0)
+mdb.models['Model-1'].sketches['__profile__'].sketchOptions.setValues(
+    viewStyle=AXISYM)
+mdb.models['Model-1'].sketches['__profile__'].ConstructionLine(point1=(0.0, 
+    -0.5), point2=(0.0, 0.5))
+mdb.models['Model-1'].sketches['__profile__'].FixedConstraint(entity=
+    mdb.models['Model-1'].sketches['__profile__'].geometry[2])
+mdb.models['Model-1'].sketches['__profile__'].rectangle(point1=(0.43, 0.0), 
+    point2=(0.43012, 0.0))
+#* Rectangle cannot be created.
+mdb.models['Model-1'].sketches['__profile__'].rectangle(point1=(0.43, 0.0), 
+    point2=(0.43012, 0.004))
+mdb.models['Model-1'].Part(dimensionality=AXISYMMETRIC, name='Part-1', type=
+    DEFORMABLE_BODY)
+mdb.models['Model-1'].parts['Part-1'].BaseShell(sketch=
+    mdb.models['Model-1'].sketches['__profile__'])
+del mdb.models['Model-1'].sketches['__profile__']
+mdb.models['Model-1'].Material(name='Material-Con')
+mdb.models['Model-1'].materials['Material-Con'].Density(table=((1.0, ), ))
+mdb.models['Model-1'].materials['Material-Con'].Elastic(table=((500000000000.0, 
+    0.35), ))
+mdb.models['Model-1'].HomogeneousSolidSection(material='Material-Con', name=
+    'Section-1', thickness=None)
+mdb.models['Model-1'].parts['Part-1'].SectionAssignment(offset=0.0, 
+    offsetField='', offsetType=MIDDLE_SURFACE, region=Region(
+    faces=mdb.models['Model-1'].parts['Part-1'].faces.getSequenceFromMask(
+    mask=('[#1 ]', ), )), sectionName='Section-1', thicknessAssignment=
+    FROM_SECTION)
+mdb.models['Model-1'].rootAssembly.DatumCsysByThreePoints(coordSysType=
+    CYLINDRICAL, origin=(0.0, 0.0, 0.0), point1=(1.0, 0.0, 0.0), point2=(0.0, 
+    0.0, -1.0))
+mdb.models['Model-1'].rootAssembly.Instance(dependent=ON, name='Part-1-1', 
+    part=mdb.models['Model-1'].parts['Part-1'])
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-1', 
+    region=Region(
+    vertices=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].vertices.getSequenceFromMask(
+    mask=('[#1 ]', ), )), u1=SET, u2=SET, ur3=UNSET)
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-2', 
+    region=Region(
+    vertices=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].vertices.getSequenceFromMask(
+    mask=('[#2 ]', ), )), u1=UNSET, u2=SET, ur3=UNSET)
+mdb.models['Model-1'].StaticStep(name='Step-1', previous='Initial')
+mdb.models['Model-1'].ExpressionField(description='', expression=
+    '114.2*pow (10,6) * ((-2.5)- (14))/(0.646-0.430) * X  + (-2.5) - ((-2.5) - (14))/(0.646-0.430)  * 0.646'
+    , localCsys=None, name='AnalyticalField-1')
+mdb.models['Model-1'].BodyForce(comp1=1.0, createStepName='Step-1', 
+    distributionType=FIELD, field='AnalyticalField-1', name='Load-1', region=
+    Region(
+    faces=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].faces.getSequenceFromMask(
+    mask=('[#1 ]', ), )))
+mdb.models['Model-1'].analyticalFields['AnalyticalField-1'].setValues(
+    expression=
+    '114.2*pow (10,6) *( ((-2.5)- (14))/(0.646-0.430) * X  + (-2.5) - ((-2.5) - (14))/(0.646-0.430)  * 0.646)')
+mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
+    explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
+    memory=90, memoryUnits=PERCENTAGE, model='Model-1', modelPrint=OFF, 
+    multiprocessingMode=DEFAULT, name='Job-1', nodalOutputPrecision=SINGLE, 
+    numCpus=1, numGPUs=0, queue=None, resultsFormat=ODB, scratch='', type=
+    ANALYSIS, userSubroutine='', waitHours=0, waitMinutes=0)
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ERROR, {'phase': BATCHPRE_PHASE, 
+    'message': 'in keyword *BOUNDARY, file "Job-1.inp", line 32: Unknown assembly node set _PICKEDSET4', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ERROR, {'phase': BATCHPRE_PHASE, 
+    'message': 'in keyword *BOUNDARY, file "Job-1.inp", line 32: Unknown assembly node set _PICKEDSET4', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ERROR, {'phase': BATCHPRE_PHASE, 
+    'message': 'in keyword *BOUNDARY, file "Job-1.inp", line 36: Unknown assembly node set _PICKEDSET5', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ERROR, {'phase': BATCHPRE_PHASE, 
+    'message': 'THIS MODEL HAS EITHER INCORRECT OR NO ELEMENT DEFINITIONS.', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ABORTED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase failed due to errors', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ERROR, {
+    'message': 'Analysis Input File Processor exited with an error.', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_ABORTED, {
+    'message': 'Analysis Input File Processor exited with an error.', 
+    'jobName': 'Job-1'})
+mdb.models['Model-1'].rootAssembly.makeIndependent(instances=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.seedPartInstance(deviationFactor=0.1, 
+    minSizeFactor=0.1, regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ), size=0.0002)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteMesh(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].faces.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#1 ]', ), ), minSizeFactor=0.1, size=3.33e-06)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteMesh(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].faces.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ), minSizeFactor=0.1, size=3.33e-06)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ), minSizeFactor=0.1, size=6.66e-06)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ), minSizeFactor=0.1, size=1.11e-05)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteSeeds(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ), minSizeFactor=0.1, size=1.11e-05)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteSeeds(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ), minSizeFactor=0.1, size=2e-05)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteSeeds(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteSeeds(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.deleteSeeds(regions=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-1'].ConstrainedSketch(name='__edit__', objectToCopy=
+    mdb.models['Model-1'].parts['Part-1'].features['Shell planar-1'].sketch)
+mdb.models['Model-1'].parts['Part-1'].projectReferencesOntoSketch(filter=
+    COPLANAR_EDGES, sketch=mdb.models['Model-1'].sketches['__edit__'], 
+    upToFeature=
+    mdb.models['Model-1'].parts['Part-1'].features['Shell planar-1'])
+mdb.models['Model-1'].sketches['__edit__'].VerticalDimension(textPoint=(
+    0.428506672382355, 0.000755769666284323), value=0.0002, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[1], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[0])
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].DistanceDimension(entity1=
+    mdb.models['Model-1'].sketches['__edit__'].geometry[6], entity2=
+    mdb.models['Model-1'].sketches['__edit__'].geometry[4], textPoint=(
+    0.430284202098846, 0.00396306812763214), value=0.001)
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].VerticalDimension(textPoint=(
+    0.4312504529953, 0.000105319544672966), value=0.001, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[3])
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].VerticalDimension(textPoint=(
+    0.431620717048645, 0.00219730008393526), value=0.001, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[3], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2])
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].Spot(point=(0.43012, 0.001))
+mdb.models['Model-1'].sketches['__edit__'].CoincidentConstraint(entity1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[4], entity2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2])
+mdb.models['Model-1'].sketches['__edit__'].VerticalDimension(textPoint=(
+    0.431043565273285, 0.000452293083071709), value=0.001, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[3])
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+#* Nothing to undo.
+mdb.models['Model-1'].sketches['__edit__'].rectangle(point1=(0.432332575321198, 
+    -1.45637895911932e-05), point2=(0.433539092540741, 0.00252438872121274))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].geometry[7], points=((
+    0.432332575321198, 0.000523981172591448), (0.4323550760746, 
+    0.000523981172591448), (0.432137817144394, 0.000504321651533246), (
+    0.432019293308258, 0.000497768516652286), (0.431920528411865, 
+    0.000497768516652286), (0.431742787361145, 0.000497768516652286), (
+    0.431604504585266, 0.000497768516652286), (0.431459665298462, 
+    0.000497768516652286), (0.431420147418976, 0.000497768516652286)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2], points=((0.43012, 
+    0.004), (0.43, 0.004), (0.43, 0.0038253809325397), (0.43, 
+    0.00374379963614047), (0.43, 0.00365480221807957), (0.43, 
+    0.00358063750900328), (0.43, 0.003506472799927), (0.43, 
+    0.00343230809085071), (0.43, 0.00335814361460507), (0.43, 
+    0.00328397890552878), (0.43, 0.00320239784196019), (0.43, 
+    0.00312823313288391), (0.43, 0.00304665206931531), (0.43, 
+    0.00295765465125442), (0.43, 0.002838991349563), (0.43, 
+    0.00279449229128659)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[1], points=((0.43, 
+    0.00279449229128659), (0.43, 0.00279449229128659), (0.43, 
+    0.00286865700036287), (0.430170923471451, 0.00289832288399339), (
+    0.430260360240936, 0.00293540512211621), (0.43046897649765, 
+    0.00297990394756198), (0.430618017911911, 0.00301698641851544), (
+    0.430685073137283, 0.00303923571482301), (0.430759578943253, 
+    0.00306890159845352), (0.430856466293335, 0.00309115089476109), (
+    0.430983126163483, 0.00314306630752981), (0.431117236614227, 
+    0.00320981442928314), (0.431303530931473, 0.00338039291091263), (
+    0.431504726409912, 0.00355838797986507), (0.431623935699463, 
+    0.00367705151438713), (0.431668639183044, 0.00375863257795572), (
+    0.431668639183044, 0.00376604916527867)))
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+mdb.models['Model-1'].sketches['__edit__'].undo()
+#* Nothing to undo.
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2], points=((0.43012, 
+    0.004), (0.43, 0.004), (0.43, 0.00384763022884727), (0.43, 
+    0.00378088210709393), (0.43, 0.00370671739801764), (0.43, 
+    0.00363255268894136), (0.43, 0.00355838797986507), (0.43, 
+    0.00348422350361943), (0.43, 0.00341005879454315), (0.43, 
+    0.00334331067278981), (0.43, 0.00326914619654417), (0.43, 
+    0.00319498148746789), (0.43, 0.00312823313288391), (0.43, 
+    0.00306890159845352), (0.43, 0.00299473688937724), (0.43, 
+    0.0029279887676239), (0.43, 0.00284640770405531), (0.430163472890854, 
+    0.00277965958230197), (0.430193275213242, 0.00272774416953325), (
+    0.430215656757355, 0.00266841240227222), (0.430230557918549, 
+    0.0026090806350112), (0.430238008499146, 0.0025423327460885), (
+    0.430185824632645, 0.0025200832169503), (0.43, 0.00249783392064273), (0.43, 
+    0.00246816780418158), (0.43, 0.00240141991525888), (0.43, 
+    0.00233467156067491), (0.43, 0.00226792343892157), (0.43, 
+    0.00219375872984529), (0.43, 0.00212701084092259), (0.43014857172966, 
+    0.00206767907366157), (0.430156022310257, 0.00199351436458528), (
+    0.430163472890854, 0.00192676612641662), (0.430163472890854, 
+    0.00185260153375566), (0.430141121149063, 0.00178585341200233), (0.43, 
+    0.00174135458655655), (0.43, 0.00166718987748027), (0.43, 
+    0.0015930252848193), (0.43, 0.00154110998846591), (0.43, 
+    0.00149661127943546), (0.43, 0.00143727962858975), (0.43, 
+    0.00135569844860584), (0.43, 0.0012889503268525), (0.43, 
+    0.00122220208868384), (0.43, 0.00116287055425346), (0.43, 
+    0.00119253620505333), (0.43, 0.00122220208868384), (0.43, 
+    0.00125186797231436), (0.43, 0.00129636679776013), (0.43, 
+    0.00134828197769821), (0.430141121149063, 0.00142244668677449), (
+    0.430156022310257, 0.00150402775034308), (0.430163472890854, 
+    0.0015930252848193), (0.430193275213242, 0.00170427234843373), (
+    0.430230557918549, 0.00177102047018707), (0.430297613143921, 
+    0.00183035212103277), (0.430349767208099, 0.00189710024278611), (
+    0.430439174175262, 0.00193418259732425), (0.430528610944748, 
+    0.00195643212646246), (0.430707424879074, 0.00198609801009297), (
+    0.430901169776917, 0.00202318001538515), (0.430908620357513, 
+    0.00202318001538515)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2], points=((
+    0.430908620357513, 0.00202318001538515), (0.430908620357513, 
+    0.00202318001538515), (0.430475175380707, 0.00205448642373085), (0.43, 
+    0.00201696227304637), (0.43, 0.00199820031411946), (0.43, 
+    0.00190439028665423), (0.43, 0.00181058025918901), (0.43, 
+    0.00166048435494304), (0.43, 0.00156667409464717), (0.430418610572815, 
+    0.00152915017679334), (0.430437475442886, 0.00147286430001259), (0.43, 
+    0.00139781646430492), (0.43, 0.00122895836830139), (0.43, 
+    0.00109762465581298), (0.430456310510635, 0.00104133831337094), (
+    0.430380910634995, 0.000947528518736362), (0.43, 0.000928766559809446)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[0], points=((0.43, 
+    0.0), (0.43, 0.0), (0.430186331272125, 0.0), (0.43, 0.0), (
+    0.430243611335754, 0.0)))
+mdb.models['Model-1'].sketches['__edit__'].ObliqueDimension(textPoint=(
+    0.430154055356979, 0.00114170485176146), value=0.00012, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[1], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[2])
+mdb.models['Model-1'].sketches['__edit__'].ObliqueDimension(textPoint=(
+    0.430412948131561, 0.000534605758730322), value=0.001, vertex1=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[0], vertex2=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[1])
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[0], points=((0.43012, 
+    -7.12334401905541e-05), (0.43012, -7.12334401905541e-05), (
+    0.430100083351135, 0.0), (0.430091232061386, 0.0), (0.430120706558228, 
+    0.0), (0.430117756128311, 0.0), (0.430117756128311, 0.0)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[3], points=((
+    0.429997756128311, 0.0), (0.43, 0.0), (0.43, 0.0), (0.43, 0.0), (
+    0.43000453710556, 0.0)))
+mdb.models['Model-1'].sketches['__edit__'].dragEntity(entity=
+    mdb.models['Model-1'].sketches['__edit__'].vertices[3], points=((
+    0.43000453710556, 0.0), (0.43000453710556, 0.0), (0.43, 0.0), (0.43, 0.0), 
+    (0.43, 0.0), (0.43, 0.0), (0.43, 0.0)))
+mdb.models['Model-1'].parts['Part-1'].features['Shell planar-1'].setValues(
+    sketch=mdb.models['Model-1'].sketches['__edit__'])
+del mdb.models['Model-1'].sketches['__edit__']
+mdb.models['Model-1'].parts['Part-1'].regenerate()
+mdb.models['Model-1'].rootAssembly.regenerate()
+mdb.models['Model-1'].rootAssembly.makeDependent(instances=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.makeIndependent(instances=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.models['Model-1'].rootAssembly.seedEdgeBySize(constraint=FINER, 
+    deviationFactor=0.1, edges=
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    ('[#1 ]', ), ), size=3.33e-06)
+mdb.models['Model-1'].rootAssembly.generateMesh(regions=(
+    mdb.models['Model-1'].rootAssembly.instances['Part-1-1'], ))
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FILE, {'phase': BATCHPRE_PHASE, 
+    'file': 'C:\\Users\\SGnir\\OneDrive\\TU\\Bachelorsemester06\\Kernspintomographie (MRT)\\GitHub-Neoscan\\Neoscan\\Abaqus\\Job-1.odb', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STARTED, {'phase': STANDARD_PHASE, 
+    'clientHost': 'Maze', 'handle': 14992, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MEMORY_ESTIMATE, {'phase': STANDARD_PHASE, 
+    'jobName': 'Job-1', 'memory': 56.0})
+mdb.jobs['Job-1']._Message(PHYSICAL_MEMORY, {'phase': STANDARD_PHASE, 
+    'physical_memory': 7529.0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MINIMUM_MEMORY, {'minimum_memory': 29.0, 
+    'phase': STANDARD_PHASE, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 1, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STATUS, {'totalTime': 1.0, 'attempts': 1, 
+    'timeIncrement': 1.0, 'increment': 1, 'stepTime': 1.0, 'step': 1, 
+    'jobName': 'Job-1', 'severe': 0, 'iterations': 1, 'phase': STANDARD_PHASE, 
+    'equilibrium': 1})
+mdb.jobs['Job-1']._Message(END_STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': STANDARD_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_COMPLETED, {'time': 'Sat Sep  7 01:57:49 2024', 
+    'jobName': 'Job-1'})
+del mdb.models['Model-1'].boundaryConditions['BC-2']
+del mdb.models['Model-1'].boundaryConditions['BC-1']
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-1', 
+    region=Region(
+    vertices=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].vertices.getSequenceFromMask(
+    mask=('[#1 ]', ), )), u1=SET, u2=SET, ur3=UNSET)
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-2', 
+    region=Region(
+    vertices=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].vertices.getSequenceFromMask(
+    mask=('[#8 ]', ), )), u1=SET, u2=UNSET, ur3=UNSET)
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FILE, {'phase': BATCHPRE_PHASE, 
+    'file': 'C:\\Users\\SGnir\\OneDrive\\TU\\Bachelorsemester06\\Kernspintomographie (MRT)\\GitHub-Neoscan\\Neoscan\\Abaqus\\Job-1.odb', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STARTED, {'phase': STANDARD_PHASE, 
+    'clientHost': 'Maze', 'handle': 16780, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MEMORY_ESTIMATE, {'phase': STANDARD_PHASE, 
+    'jobName': 'Job-1', 'memory': 56.0})
+mdb.jobs['Job-1']._Message(PHYSICAL_MEMORY, {'phase': STANDARD_PHASE, 
+    'physical_memory': 7529.0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MINIMUM_MEMORY, {'minimum_memory': 29.0, 
+    'phase': STANDARD_PHASE, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 1, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STATUS, {'totalTime': 1.0, 'attempts': 1, 
+    'timeIncrement': 1.0, 'increment': 1, 'stepTime': 1.0, 'step': 1, 
+    'jobName': 'Job-1', 'severe': 0, 'iterations': 1, 'phase': STANDARD_PHASE, 
+    'equilibrium': 1})
+mdb.jobs['Job-1']._Message(END_STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': STANDARD_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_COMPLETED, {'time': 'Sat Sep  7 02:00:18 2024', 
+    'jobName': 'Job-1'})
+del mdb.models['Model-1'].boundaryConditions['BC-2']
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='BC-2', 
+    region=Region(
+    edges=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    mask=('[#8 ]', ), )), u1=SET, u2=UNSET, ur3=UNSET)
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FILE, {'phase': BATCHPRE_PHASE, 
+    'file': 'C:\\Users\\SGnir\\OneDrive\\TU\\Bachelorsemester06\\Kernspintomographie (MRT)\\GitHub-Neoscan\\Neoscan\\Abaqus\\Job-1.odb', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STARTED, {'phase': STANDARD_PHASE, 
+    'clientHost': 'Maze', 'handle': 24048, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MEMORY_ESTIMATE, {'phase': STANDARD_PHASE, 
+    'jobName': 'Job-1', 'memory': 56.0})
+mdb.jobs['Job-1']._Message(PHYSICAL_MEMORY, {'phase': STANDARD_PHASE, 
+    'physical_memory': 7529.0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MINIMUM_MEMORY, {'minimum_memory': 29.0, 
+    'phase': STANDARD_PHASE, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 1, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STATUS, {'totalTime': 1.0, 'attempts': 1, 
+    'timeIncrement': 1.0, 'increment': 1, 'stepTime': 1.0, 'step': 1, 
+    'jobName': 'Job-1', 'severe': 0, 'iterations': 1, 'phase': STANDARD_PHASE, 
+    'equilibrium': 1})
+mdb.jobs['Job-1']._Message(END_STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': STANDARD_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_COMPLETED, {'time': 'Sat Sep  7 02:01:59 2024', 
+    'jobName': 'Job-1'})
+mdb.models['Model-1'].boundaryConditions['BC-1'].suppress()
+mdb.models['Model-1'].boundaryConditions['BC-2'].suppress()
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FILE, {'phase': BATCHPRE_PHASE, 
+    'file': 'C:\\Users\\SGnir\\OneDrive\\TU\\Bachelorsemester06\\Kernspintomographie (MRT)\\GitHub-Neoscan\\Neoscan\\Abaqus\\Job-1.odb', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STARTED, {'phase': STANDARD_PHASE, 
+    'clientHost': 'Maze', 'handle': 11892, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MEMORY_ESTIMATE, {'phase': STANDARD_PHASE, 
+    'jobName': 'Job-1', 'memory': 56.0})
+mdb.jobs['Job-1']._Message(PHYSICAL_MEMORY, {'phase': STANDARD_PHASE, 
+    'physical_memory': 7529.0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MINIMUM_MEMORY, {'minimum_memory': 29.0, 
+    'phase': STANDARD_PHASE, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(WARNING, {'phase': STANDARD_PHASE, 
+    'message': 'Solver problem. Numerical singularity when processing node PART-1-1.5551 D.O.F. 2 ratio = 11.8897E+12 .', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 1, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STATUS, {'totalTime': 1.0, 'attempts': 1, 
+    'timeIncrement': 1.0, 'increment': 1, 'stepTime': 1.0, 'step': 1, 
+    'jobName': 'Job-1', 'severe': 0, 'iterations': 1, 'phase': STANDARD_PHASE, 
+    'equilibrium': 1})
+mdb.jobs['Job-1']._Message(END_STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': STANDARD_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_COMPLETED, {'time': 'Sat Sep  7 02:08:49 2024', 
+    'jobName': 'Job-1'})
+mdb.models['Model-1'].DisplacementBC(amplitude=UNSET, createStepName='Initial', 
+    distributionType=UNIFORM, fieldName='', localCsys=None, name='y-direction', 
+    region=Region(
+    edges=mdb.models['Model-1'].rootAssembly.instances['Part-1-1'].edges.getSequenceFromMask(
+    mask=('[#1 ]', ), )), u1=UNSET, u2=SET, ur3=UNSET)
+mdb.jobs['Job-1'].submit(consistencyChecking=OFF)
+mdb.jobs['Job-1']._Message(STARTED, {'phase': BATCHPRE_PHASE, 
+    'clientHost': 'Maze', 'handle': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FILE, {'phase': BATCHPRE_PHASE, 
+    'file': 'C:\\Users\\SGnir\\OneDrive\\TU\\Bachelorsemester06\\Kernspintomographie (MRT)\\GitHub-Neoscan\\Neoscan\\Abaqus\\Job-1.odb', 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': BATCHPRE_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STARTED, {'phase': STANDARD_PHASE, 
+    'clientHost': 'Maze', 'handle': 19724, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MEMORY_ESTIMATE, {'phase': STANDARD_PHASE, 
+    'jobName': 'Job-1', 'memory': 56.0})
+mdb.jobs['Job-1']._Message(PHYSICAL_MEMORY, {'phase': STANDARD_PHASE, 
+    'physical_memory': 7529.0, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(MINIMUM_MEMORY, {'minimum_memory': 29.0, 
+    'phase': STANDARD_PHASE, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(ODB_FRAME, {'phase': STANDARD_PHASE, 'step': 0, 
+    'frame': 1, 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(STATUS, {'totalTime': 1.0, 'attempts': 1, 
+    'timeIncrement': 1.0, 'increment': 1, 'stepTime': 1.0, 'step': 1, 
+    'jobName': 'Job-1', 'severe': 0, 'iterations': 1, 'phase': STANDARD_PHASE, 
+    'equilibrium': 1})
+mdb.jobs['Job-1']._Message(END_STEP, {'phase': STANDARD_PHASE, 'stepId': 1, 
+    'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(COMPLETED, {'phase': STANDARD_PHASE, 
+    'message': 'Analysis phase complete', 'jobName': 'Job-1'})
+mdb.jobs['Job-1']._Message(JOB_COMPLETED, {'time': 'Sat Sep  7 02:10:59 2024', 
+    'jobName': 'Job-1'})
+# Save by SGnir on 2024_09_07-02.11.52; build 2020 2019_09_13-19.49.31 163176
