@@ -131,3 +131,5 @@ print("currentR equal to assigned or calculated r_a: ", currentR == r_a, " curre
 #     #faceOfNewLayerSequence = partPancake.faces.sequenceFromLabels(labels=[faceOfNewLayer.index])
 #     regionOfSectionName= regionToolset.Region(faces=facesOfSectionName)
 #     partPancake.SectionAssignment(region=regionOfSectionName, sectionName=sectionName)
+    
+

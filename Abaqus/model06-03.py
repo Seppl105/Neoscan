@@ -10,8 +10,10 @@ import regionToolset
 
 roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
 
-windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
-totalWindings = int(600/windingDivisor)
+# windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
+# totalWindings = int(600/windingDivisor)
+totalWindings = 600 #600
+windingDivisor = 600/totalWindings
 
 #   Materialparameter des Leiterbands
 t_con = 0.12 * 10**(-3) # [m] Dicke des Bandleiters
@@ -60,7 +62,7 @@ b_0 = b_za - (b_za-b_zi)/(r_a-r_i) * r_a # [T] absolutes Glied der Geradengleich
 #     sheetSizeCalculated = r_i + totalWindings*t_total + 5*t_total
 # else:
 #     sheetSizeCalculated = r_i + totalWindings*t_total + 5*t_total + t_confinement
-sheetSizeCalculated = t_total*10 + t_confinement
+#sheetSizeCalculated = t_total*10 + t_confinement
 
 # Create a new model
 model = mdb.Model(name='Model-1')
@@ -87,43 +89,68 @@ sectionNames = ['Section-Con', 'Section-Cow', 'Section-Ins'] # this array is use
 
 parts = ["Con", "Cow", "Ins"]
 
-# Create all Parts
-for i, part in enumerate(parts):
-    partName = "Part-" + part
-    sketchPart = model.ConstrainedSketch(name="Sketch-" + part, sheetSize=sheetSizeCalculated)
-    g, v, d, c = sketchPart.geometry, sketchPart.vertices, sketchPart.dimensions, sketchPart.constraints
+def createRing(name, pointOne, pointTwo):
+    # points have to be tuples e.g. (0.0, 2.0)
+    sketchRing = model.ConstrainedSketch(name="Sketch-" + name, sheetSize=max(abs(pointOne[0] - pointTwo[0]), abs(pointOne[1] - pointTwo[1])))
+    g, v, d, c = sketchRing.geometry, sketchRing.vertices, sketchRing.dimensions, sketchRing.constraints
 
-    ###################### defining the axis of revolution?????????????????????????????????????????
-    #sketchPart.sketchOptions.setValues(viewStyle=AXISYM) #######???
-    sketchPart.ConstructionLine(point1=(0.0, - sheetSizeCalculated/2), point2=(0.0, sheetSizeCalculated/2)) 
-    sketchPart.FixedConstraint(entity=g[2]) ################# 
-
-
-    sketchPart.rectangle(point1=(0.0, yCoorStart), point2=(materialWidths[i], yCoorEnd))
-    #sketchPart.unsetPrimaryObject()
-
-    # Create Part-Pancake based on the sketch
-    part = model.Part(name=partName, dimensionality=AXISYMMETRIC, type=DEFORMABLE_BODY)
-    part.BaseShell(sketch=sketchPart)
     
-    # add part to the assembly
-    assembly = mdb.models['Model-1'].rootAssembly
-    instanceName = partName + "-AssemblyInstance"
-    assembly.Instance(name=instanceName, part=part, dependent=OFF)
-    assembly.LinearInstancePattern(instanceList=(instanceName, ), direction1=(1.0,0.0,0.0), direction2=(0.0,1.0,0.0), number1=totalWindings, number2=1, spacing1=t_total, spacing2=yCoorEnd)
+    ###################### defining the axis of revolution?????????????????????????????????????????
+    sketchRing.ConstructionLine(point1=(0.0, pointOne[1]), point2=(0.0, pointTwo[1])) 
+    sketchRing.FixedConstraint(entity=g[2]) ################# 
+    
+    sketchRing.rectangle(point1=pointOne, point2=pointTwo)
+    
+    ring = model.Part(name="Part-" + name, dimensionality=AXISYMMETRIC, type=DEFORMABLE_BODY)
+    ring.BaseShell(sketch=sketchRing)
+    
+    del model.sketches["Sketch-" + name] #free up memory space
+    
+    return ring
 
-sectionPoints = [[] for element in sectionNames] # a list containing one list for each section with each list containing one point within each corresponding face
-                                                 # ("sectionPoints" is later used to assign the sections)                                             
+# Create the first ring
+part = createRing(name=parts[0] + "1", pointOne=(r_i, yCoorStart), pointTwo=(r_i + materialWidths[0], yCoorEnd))
+# assign section
+faceOfPart = part.faces.findAt(((r_i + materialWidths[0]/2, yCoorMid, 0.0), ))  # the argument must be tuple of the shape ((0, 0, 0),), ((1, 1, 1),), ((2, 2, 2),)
+regionOfSectionName= regionToolset.Region(faces=faceOfPart)
+part.SectionAssignment(region=regionOfSectionName, sectionName=sectionNames[0])
+
+# add the first ring to the assembly
+assembly = mdb.models['Model-1'].rootAssembly
+assembly.Instance(name="AssemblyInstance-" + parts[0] + "1", part=part, dependent=ON)
+
+# sectionPoints = [[] for element in sectionNames] # a list containing one list for each section with each list containing one point within each corresponding face
+#                                                  # ("sectionPoints" is later used to assign the sections)                                             
+
+# Create all remaining parts, add them to the assembly and update sectionPoints
 currentR = r_i    # outer radius of the partioning (rises which each added layer)
 for winding in range(totalWindings):
     for i,width in enumerate(materialWidths):
-        # assign a point within each instance to the corresponding list (used to assign sections) 
-        sectionPoints[i].append((currentR + width/2, yCoorMid, 0.0))
-        currentR = round(currentR + width, roundToDigit)
+        if winding != 0 or i != 0:
+            # Create ring
+            part = createRing(name=parts[i] + str(winding + 1), pointOne=(currentR, yCoorStart), pointTwo=(currentR + width, yCoorEnd))
+            # Add ring to the assembly
+            instanceName = "AssemblyInstance" + parts[i] + str(winding + 1)
+            assembly.Instance(name=instanceName, part=part, dependent=ON)
+            
+            # assign section
+            faceOfPart = part.faces.findAt(((currentR + width/2, yCoorMid, 0.0), ))  # the argument must be tuple of the shape ((0, 0, 0),), ((1, 1, 1),), ((2, 2, 2),)
+            regionOfSectionName= regionToolset.Region(faces=faceOfPart)
+            part.SectionAssignment(region=regionOfSectionName, sectionName=sectionNames[i])
+            # old:
+            # # assign a point within each instance to the corresponding list (used to assign sections) 
+            # sectionPoints[i].append((currentR + width/2, yCoorMid, 0.0))
+            currentR = round(currentR + width, roundToDigit)
+        else:
+            currentR = currentR + width
+            
+            
+            
 
 print("currentR equal to assigned or calculated r_a: ", currentR == r_a, " currentR: ", currentR, " r_a: ", r_a)
+assembly.regenerate()
 
-# assign the faces to the corresponding sections according to sectionPoints
+# #assign the faces to the corresponding sections according to sectionPoints
 # for i,sectionName in enumerate(sectionNames):
 #     tuplePoints = tuple([(point,) for point in sectionPoints[i]]) # creating a tuple of tuple ==> tuplPoints => (((0, 0, 0),), ((1, 1, 1),), ((2, 2, 2),))
 #     facesOfSectionName = part.faces.findAt(*tuplePoints)  # ==> the argument must be tuple of the shape ((0, 0, 0),), ((1, 1, 1),), ((2, 2, 2),) ==> hence we must remove the outer tuple ==> hence, we passed the argument with '*' sign which takes care of this
