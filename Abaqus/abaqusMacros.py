@@ -1076,3 +1076,80 @@ def MeshPart():
     pass
 
 
+def ReducedIntegrationFrictionlessStepTime():
+    import section
+    import regionToolset
+    import displayGroupMdbToolset as dgm
+    import part
+    import material
+    import assembly
+    import step
+    import interaction
+    import load
+    import mesh
+    import optimization
+    import job
+    import sketch
+    import visualization
+    import xyPlot
+    import displayGroupOdbToolset as dgo
+    import connectorBehavior
+    a = mdb.models['Model-1'].rootAssembly
+    session.viewports['Viewport: 1'].setValues(displayedObject=a)
+    session.viewports['Viewport: 1'].assemblyDisplay.setValues(mesh=ON)
+    session.viewports['Viewport: 1'].assemblyDisplay.meshOptions.setValues(
+        meshTechnique=ON)
+    elemType1 = mesh.ElemType(elemCode=CAX4, elemLibrary=STANDARD)
+    elemType2 = mesh.ElemType(elemCode=CAX3, elemLibrary=STANDARD, 
+        secondOrderAccuracy=OFF, distortionControl=DEFAULT)
+    a = mdb.models['Model-1'].rootAssembly
+    f1 = a.instances['AssemblyInstance-Con1'].faces
+    faces1 = f1.getSequenceFromMask(mask=('[#1 ]', ), )
+    f2 = a.instances['AssemblyInstance-Cow1'].faces
+    faces2 = f2.getSequenceFromMask(mask=('[#1 ]', ), )
+    f3 = a.instances['AssemblyInstance-Ins1'].faces
+    faces3 = f3.getSequenceFromMask(mask=('[#1 ]', ), )
+    f4 = a.instances['AssemblyInstance-Con2'].faces
+    faces4 = f4.getSequenceFromMask(mask=('[#1 ]', ), )
+    f5 = a.instances['AssemblyInstance-Cow2'].faces
+    faces5 = f5.getSequenceFromMask(mask=('[#1 ]', ), )
+    f6 = a.instances['AssemblyInstance-Ins2'].faces
+    faces6 = f6.getSequenceFromMask(mask=('[#1 ]', ), )
+    f7 = a.instances['AssemblyInstance-Con3'].faces
+    faces7 = f7.getSequenceFromMask(mask=('[#1 ]', ), )
+    f8 = a.instances['AssemblyInstance-Cow3'].faces
+    faces8 = f8.getSequenceFromMask(mask=('[#1 ]', ), )
+    f9 = a.instances['AssemblyInstance-Ins3'].faces
+    faces9 = f9.getSequenceFromMask(mask=('[#1 ]', ), )
+    f10 = a.instances['AssemblyInstance-Con4'].faces
+    faces10 = f10.getSequenceFromMask(mask=('[#1 ]', ), )
+    f11 = a.instances['AssemblyInstance-Cow4'].faces
+    faces11 = f11.getSequenceFromMask(mask=('[#1 ]', ), )
+    f12 = a.instances['AssemblyInstance-Ins4'].faces
+    faces12 = f12.getSequenceFromMask(mask=('[#1 ]', ), )
+    f13 = a.instances['AssemblyInstance-Con5'].faces
+    faces13 = f13.getSequenceFromMask(mask=('[#1 ]', ), )
+    f14 = a.instances['AssemblyInstance-Cow5'].faces
+    faces14 = f14.getSequenceFromMask(mask=('[#1 ]', ), )
+    f15 = a.instances['AssemblyInstance-Ins5'].faces
+    faces15 = f15.getSequenceFromMask(mask=('[#1 ]', ), )
+    pickedRegions =((faces1+faces2+faces3+faces4+faces5+faces6+faces7+faces8+\
+        faces9+faces10+faces11+faces12+faces13+faces14+faces15), )
+    a.setElementType(regions=pickedRegions, elemTypes=(elemType1, elemType2))
+    session.viewports['Viewport: 1'].assemblyDisplay.setValues(mesh=OFF, 
+        interactions=ON, constraints=ON, connectors=ON, engineeringFeatures=ON)
+    session.viewports['Viewport: 1'].assemblyDisplay.meshOptions.setValues(
+        meshTechnique=OFF)
+    mdb.models['Model-1'].interactionProperties['IntProp-1'].tangentialBehavior.setValues(
+        formulation=FRICTIONLESS)
+    mdb.models['Model-1'].interactionProperties['IntProp-1'].normalBehavior.setValues(
+        pressureOverclosure=HARD, allowSeparation=ON, 
+        constraintEnforcementMethod=DEFAULT)
+    session.viewports['Viewport: 1'].assemblyDisplay.setValues(
+        step='Step-1-BodyForce')
+    session.viewports['Viewport: 1'].assemblyDisplay.setValues(interactions=OFF, 
+        constraints=OFF, connectors=OFF, engineeringFeatures=OFF, 
+        adaptiveMeshConstraints=ON)
+    mdb.models['Model-1'].steps['Step-1-BodyForce'].setValues(initialInc=0.05)
+
+

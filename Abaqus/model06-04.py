@@ -13,7 +13,7 @@ roundToDigit = 9 # if a value is rounded it will be to the "roundToDigit" digits
 
 # windingDivisor = 60       # Es wird für 600/windingDivisor Windungen gerechnet
 # totalWindings = int(600/windingDivisor)
-totalWindings = 20 #600
+totalWindings = 5 #600
 windingDivisor = 600/totalWindings
 
 #   Materialparameter des Leiterbands
@@ -219,6 +219,8 @@ assembly.regenerate()
 
 # Create StaticStep named Step-1-BodyForce
 mdb.models['Model-1'].StaticStep(name='Step-1-BodyForce', previous='Initial', description='Description-Step-1-Body-Force')
+mdb.models['Model-1'].steps['Step-1-BodyForce'].setValues(initialInc=0.05)
+
 
 
 # create BC
@@ -277,11 +279,13 @@ mdb.models['Model-1'].BodyForce(name='Load-1-BodyForce', createStepName='Step-1-
 
 # create interactionProperties
 mdb.models['Model-1'].ContactProperty('IntProp-1')
+# mdb.models['Model-1'].interactionProperties['IntProp-1'].TangentialBehavior(
+#     formulation=PENALTY, directionality=ISOTROPIC, slipRateDependency=OFF, 
+#     pressureDependency=OFF, temperatureDependency=OFF, dependencies=0, 
+#     table=((0.9, ), ), shearStressLimit=None, maximumElasticSlip=FRACTION, 
+#     fraction=0.005, elasticSlipStiffness=None)
 mdb.models['Model-1'].interactionProperties['IntProp-1'].TangentialBehavior(
-    formulation=PENALTY, directionality=ISOTROPIC, slipRateDependency=OFF, 
-    pressureDependency=OFF, temperatureDependency=OFF, dependencies=0, 
-    table=((0.9, ), ), shearStressLimit=None, maximumElasticSlip=FRACTION, 
-    fraction=0.005, elasticSlipStiffness=None)
+    formulation=FRICTIONLESS)
 mdb.models['Model-1'].interactionProperties['IntProp-1'].tangentialBehavior.setValues(
     formulation=PENALTY, directionality=ISOTROPIC, slipRateDependency=OFF, 
     pressureDependency=OFF, temperatureDependency=OFF, dependencies=0, 
