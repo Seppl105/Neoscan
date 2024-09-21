@@ -1,5 +1,5 @@
 from driverConstants import *
-from driverStandard import StandardAnalysis
+from driverStandardMPI import StandardMPIAnalysis
 import driverUtils, sys
 options = {
     'SIMExt':'.sim',
@@ -14,14 +14,14 @@ options = {
     'cavityTypes':[],
     'cavparallel':OFF,
     'complexFrequency':OFF,
-    'contact':OFF,
+    'contact':ON,
     'cosimulation':OFF,
     'coupledProcedure':OFF,
-    'cpus':1,
+    'cpus':4,
     'cse':OFF,
     'cyclicSymmetryModel':OFF,
     'directCyclic':OFF,
-    'direct_port':'53700',
+    'direct_port':'60185',
     'direct_solver':DMP,
     'dsa':OFF,
     'dynStepSenseAdj':OFF,
@@ -32,7 +32,7 @@ options = {
     'fieldImportFiles':[],
     'filPrt':[],
     'fils':[],
-    'finitesliding':OFF,
+    'finitesliding':ON,
     'flexiblebody':OFF,
     'foundation':OFF,
     'geostatic':OFF,
@@ -51,8 +51,8 @@ options = {
     'keyword_licenses':[],
     'lanczos':OFF,
     'libs':[],
-    'listener_name':'Maze.lan',
-    'listener_resource':'14684',
+    'listener_name':'Maze',
+    'listener_resource':'13956',
     'magnetostatic':OFF,
     'massDiffusion':OFF,
     'materialresponse':OFF,
@@ -62,8 +62,14 @@ options = {
     'modifiedTet':OFF,
     'moldflowFiles':[],
     'moldflowMaterial':OFF,
-    'mp_mode':THREADS,
+    'mp_file_system':(DETECT, DETECT),
+    'mp_head_node':('maze', '10.128.6.105'),
+    'mp_host_list':(('maze', 4),),
+    'mp_mode':MPI,
     'mp_mode_requested':MPI,
+    'mp_mpi_validate':OFF,
+    'mp_mpirun_path':'C:\\Program Files\\Microsoft MPI\\bin\\mpiexec.exe',
+    'mp_rsh_command':'dummy %H -l SGnir -n %C',
     'multiphysics':OFF,
     'noDmpDirect':[],
     'noMultiHost':[],
@@ -111,6 +117,6 @@ options = {
     'visco':OFF,
     'xplSelect':OFF,
 }
-analysis = StandardAnalysis(options)
+analysis = StandardMPIAnalysis(options)
 status = analysis.run()
 sys.exit(status)

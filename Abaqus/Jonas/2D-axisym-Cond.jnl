@@ -1,0 +1,40 @@
+# Save by SGnir on 2024_09_12-10.12.11; build 2020 2019_09_13-19.49.31 163176
+from abaqus import *
+upgradeMdb(
+    'C:/Users/SGnir/OneDrive/TU/Bachelorsemester06/Kernspintomographie (MRT)/GitHub-Neoscan/Neoscan/Abaqus/Jonas/2D-axisym-Cond-2019.cae'
+    , 
+    'C:/Users/SGnir/OneDrive/TU/Bachelorsemester06/Kernspintomographie (MRT)/GitHub-Neoscan/Neoscan/Abaqus/Jonas/2D-axisym-Cond.cae')
+# Save by SGnir on 2024_09_12-10.12.11; build 2020 2019_09_13-19.49.31 163176
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-1'].ConstrainedSketch(name='__edit__', objectToCopy=
+    mdb.models['Model-1'].parts['Conductor'].features['Shell planar-1'].sketch)
+mdb.models['Model-1'].parts['Conductor'].projectReferencesOntoSketch(filter=
+    COPLANAR_EDGES, sketch=mdb.models['Model-1'].sketches['__edit__'], 
+    upToFeature=
+    mdb.models['Model-1'].parts['Conductor'].features['Shell planar-1'])
+mdb.models['Model-1'].sketches['__edit__'].dimensions[0].setValues(value=0.004)
+mdb.models['Model-1'].sketches['__edit__'].dimensions[1].setValues(value=
+    0.00012)
+mdb.models['Model-1'].sketches['__edit__'].dimensions[2].setValues(value=0.43)
+del mdb.models['Model-1'].sketches['__edit__']
+mdb.models['Model-1'].ConstrainedSketch(name='__edit__', objectToCopy=
+    mdb.models['Model-1'].parts['Conductor'].features['Shell planar-1'].sketch)
+mdb.models['Model-1'].parts['Conductor'].projectReferencesOntoSketch(filter=
+    COPLANAR_EDGES, sketch=mdb.models['Model-1'].sketches['__edit__'], 
+    upToFeature=
+    mdb.models['Model-1'].parts['Conductor'].features['Shell planar-1'])
+mdb.models['Model-1'].sketches['__edit__'].dimensions[2].setValues(value=50)
+mdb.models['Model-1'].sketches['__edit__'].dimensions[2].setValues(value=0.43)
+# Save by SGnir on 2024_09_12-10.33.32; build 2020 2019_09_13-19.49.31 163176

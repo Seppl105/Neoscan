@@ -1,0 +1,28 @@
+<Description>
+   ***  ABAQUS/ABQcaeG rank 0 received the SIGABRT signal
+</Description>
+
+<Context>
+   UNKNOWN
+</Context>
+
+<Callstack>
+</Callstack>
+
+<Memory>
+   <Current>              77 MB </Current>
+   <Resident>            134 MB </Resident>
+   <Physical>           7529 MB </Physical>
+   <Limit>                 0 MB </Limit>
+   <Accessible>         7529 MB </Accessible>
+   <Allocator>            DL    </Allocator>
+</Memory>
+
+<Directories>
+  <current> C:\Users\SGnir\OneDrive\TU\Bachelorsemester06\Kernspintomographie (MRT)\GitHub-Neoscan\Neoscan\Abaqus </current> 
+     <temp> C:\Users\SGnir\AppData\Local\Temp </temp>
+</Directories>
+
+<Installation>
+</Installation>
+
