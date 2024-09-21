@@ -3,20 +3,20 @@ Abaqus JOB Job-1
 Abaqus 2020
 Abaqus License Manager checked out the following licenses:
 Abaqus/Standard checked out 8 tokens from Flexnet server 130.149.89.49.
-<152 out of 160 licenses remain available>.
+<147 out of 160 licenses remain available>.
 Begin Analysis Input File Processor
-9/11/2024 6:50:47 PM
+9/21/2024 11:45:53 PM
 Run pre.exe
-9/11/2024 6:50:55 PM
+9/21/2024 11:46:02 PM
 End Analysis Input File Processor
 Begin Abaqus/Standard Analysis
-9/11/2024 6:50:55 PM
+9/21/2024 11:46:02 PM
 Run standard.exe
-9/11/2024 6:51:04 PM
+9/21/2024 11:46:36 PM
 End Abaqus/Standard Analysis
 Begin SIM Wrap-up
-9/11/2024 6:51:05 PM
+9/21/2024 11:46:37 PM
 Run SMASimUtility.exe
-9/11/2024 6:51:05 PM
+9/21/2024 11:46:37 PM
 End SIM Wrap-up
 Abaqus JOB Job-1 COMPLETED
